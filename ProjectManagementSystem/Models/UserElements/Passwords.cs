@@ -5,9 +5,10 @@ namespace ProjectManagementSystem.Models.UserElements
 {
     public class Passwords
     {
-        [Key]
-        public int userId { get; set; }
-        [Required]
         public User user { get; set; }
+        [Key]
+        public int user_id { get; set; }
+        public string hashed_password { get; set; }
+      
     }
 }

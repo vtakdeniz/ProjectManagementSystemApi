@@ -7,9 +7,10 @@ namespace ProjectManagementSystem.Models.RelationTables
 {
     public class TeamHasUsers
     {
-        [Key]
+        public string user_id { get; set; }
         public User user { get; set; }
-        [Key]
+
+        public int team_id { get; set; }
         public Team team { get; set; }
     }
 }

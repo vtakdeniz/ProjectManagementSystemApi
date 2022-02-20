@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using AutoMapper;
+using ProjectManagementSystem.Models.JobElements;
+using ProjectManagementSystem.Models.RelationTables;
 
 namespace ProjectManagementSystem.Models.ProjectElements
 {
@@ -13,6 +17,12 @@ namespace ProjectManagementSystem.Models.ProjectElements
         [Required]
         public DateTime startDate { get; set; } = DateTime.Now;
         public DateTime endDate { get; set; }
-        public bool isFinished { get; set; }
+        public bool isFinished { get; set; } = false;
+        public List<Team> teams { get; set; }
+        public List<Board> boards { get; set; }
+        public List<UserAssignedProjects> userAssignedProjects { get; set; }
+        public List<UserHasProjects> userHasProjects{ get; set; }
+        public List<Job> projectJobs { get; set; }
+
     }
 }

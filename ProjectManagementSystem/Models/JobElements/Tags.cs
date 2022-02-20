@@ -1,15 +1,18 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using ProjectManagementSystem.Models.TaskElements;
+using ProjectManagementSystem.Models.JobElements;
 
-namespace ProjectManagementSystem.Models.TaskElements
+namespace ProjectManagementSystem.Models.JobElements
 {
     public class Tags
     {
         [Key]
         public int Id { get; set; }
+
         [Required]
-        public Task task { get; set; }
+        public int job_id { get; set; }
+        public Job job { get; set; }
+
         [Required]
         public string tagName { get; set; }
     }

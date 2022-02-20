@@ -7,11 +7,11 @@ namespace ProjectManagementSystem.Models.RelationTables
 {
     public class UserHasProjects
     {
-        [Key]
+        public string user_id { get; set; }
         public User user { get; set; }
-        [Key]
+
+        public int project_id { get; set; }
         public Project project { get; set; }
-        [Key]
-        public int userSpaceProjectId { get; set; }
+
     }
 }
