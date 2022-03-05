@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjectManagementSystem.Data;
 
 namespace ProjectManagementSystem.Migrations
 {
     [DbContext(typeof(ManagementContext))]
-    partial class ManagementContextModelSnapshot : ModelSnapshot
+    [Migration("20220305164232_BoardHasUsersCascade")]
+    partial class BoardHasUsersCascade
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -779,13 +781,13 @@ namespace ProjectManagementSystem.Migrations
                     b.HasOne("ProjectManagementSystem.Models.ProjectElements.Board", "board")
                         .WithMany("boardHasAdmins")
                         .HasForeignKey("board_id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("ProjectManagementSystem.Models.UserElements.User", "user")
                         .WithMany("boardHasAdmins")
                         .HasForeignKey("user_id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("board");
@@ -798,13 +800,13 @@ namespace ProjectManagementSystem.Migrations
                     b.HasOne("ProjectManagementSystem.Models.ProjectElements.Board", "board")
                         .WithMany("boardHasTeams")
                         .HasForeignKey("board_id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("ProjectManagementSystem.Models.ProjectElements.Team", "team")
                         .WithMany("boardHasTeams")
                         .HasForeignKey("team_id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("board");

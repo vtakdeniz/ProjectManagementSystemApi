@@ -407,3 +407,4 @@ ASALocalRun/
 appsetting.json
 launchSettings.json
 Properties/
+startenv.sh

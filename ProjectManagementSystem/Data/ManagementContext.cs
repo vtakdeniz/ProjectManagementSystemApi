@@ -90,11 +90,11 @@ namespace ProjectManagementSystem.Data
             modelBuilder.Entity<BoardHasAdmins>()
                 .HasOne(r => r.board)
                 .WithMany(board => board.boardHasAdmins)
-                .HasForeignKey(r=>r.board_id).OnDelete(DeleteBehavior.NoAction);
+                .HasForeignKey(r=>r.board_id).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<BoardHasAdmins>()
                 .HasOne(r => r.user)
                 .WithMany(user => user.boardHasAdmins)
-                .HasForeignKey(r => r.user_id).OnDelete(DeleteBehavior.NoAction);
+                .HasForeignKey(r => r.user_id).OnDelete(DeleteBehavior.Cascade);
 
 
             modelBuilder.Entity<BoardHasTeams>()
@@ -102,11 +102,11 @@ namespace ProjectManagementSystem.Data
             modelBuilder.Entity<BoardHasTeams>()
                 .HasOne(r => r.board)
                 .WithMany(board => board.boardHasTeams)
-                .HasForeignKey(r => r.board_id).OnDelete(DeleteBehavior.NoAction);
+                .HasForeignKey(r => r.board_id).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<BoardHasTeams>()
                 .HasOne(r => r.team)
                 .WithMany(team => team.boardHasTeams)
-                .HasForeignKey(r => r.team_id).OnDelete(DeleteBehavior.NoAction);
+                .HasForeignKey(r => r.team_id).OnDelete(DeleteBehavior.Cascade);
 
             
             modelBuilder.Entity<BoardHasUsers>()
@@ -114,23 +114,23 @@ namespace ProjectManagementSystem.Data
             modelBuilder.Entity<BoardHasUsers>()
                 .HasOne(r => r.board)
                 .WithMany(board => board.boardHasUsers)
-                .HasForeignKey(r => r.board_id).OnDelete(DeleteBehavior.NoAction);
+                .HasForeignKey(r => r.board_id).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<BoardHasUsers>()
                 .HasOne(r => r.user)
                 .WithMany(user => user.boardHasUsers)
-                .HasForeignKey(r => r.user_id).OnDelete(DeleteBehavior.NoAction);
+                .HasForeignKey(r => r.user_id).OnDelete(DeleteBehavior.Cascade);
 
 
             modelBuilder.Entity<JobHasUsers>()
                 .HasKey(r => new { r.user_id, r.job_id});
             modelBuilder.Entity<JobHasUsers>()
                 .HasOne(r => r.job)
-                .WithMany(job => job.jobHasUsers).OnDelete(DeleteBehavior.NoAction)
+                .WithMany(job => job.jobHasUsers)
                 .HasForeignKey(r => r.job_id).OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<JobHasUsers>()
                 .HasOne(r => r.user)
-                .WithMany(user => user.jobHasUsers).OnDelete(DeleteBehavior.NoAction)
-                .HasForeignKey(r => r.user_id).OnDelete(DeleteBehavior.NoAction);
+                .WithMany(user => user.jobHasUsers)
+                .HasForeignKey(r => r.user_id).OnDelete(DeleteBehavior.Cascade);
 
 
             modelBuilder.Entity<TeamHasUsers>()
@@ -138,14 +138,14 @@ namespace ProjectManagementSystem.Data
             modelBuilder.Entity<TeamHasUsers>()
                 .HasOne(r => r.team)
                 .WithMany(team => team.teamHasUsers)
-                .HasForeignKey(r => r.team_id).OnDelete(DeleteBehavior.NoAction);
+                .HasForeignKey(r => r.team_id).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<TeamHasUsers>()
                 .HasOne(r => r.user)
                 .WithMany(user => user.teamHasUsers)
-                .HasForeignKey(r => r.user_id).OnDelete(DeleteBehavior.NoAction);
+                .HasForeignKey(r => r.user_id).OnDelete(DeleteBehavior.Cascade);
 
 
-             modelBuilder.Entity<UserAssignedProjects>()
+            modelBuilder.Entity<UserAssignedProjects>()
                .HasOne(r => r.assignerUser)
                .WithMany(user => user.assignedByUser)
                .HasForeignKey(r => r.assigner_id).OnDelete(DeleteBehavior.NoAction)
@@ -154,12 +154,12 @@ namespace ProjectManagementSystem.Data
               .HasKey(r => new { r.receiver_id, r.project_id});
             modelBuilder.Entity<UserAssignedProjects>()
                 .HasOne(r => r.project)
-                .WithMany(project => project.userAssignedProjects).OnDelete(DeleteBehavior.NoAction)
-                .HasForeignKey(r => r.project_id).OnDelete(DeleteBehavior.NoAction);
+                .WithMany(project => project.userAssignedProjects)
+                .HasForeignKey(r => r.project_id).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<UserAssignedProjects>()
                 .HasOne(r => r.receiverUser)
-                .WithMany(user => user.userAssignedProjects).OnDelete(DeleteBehavior.NoAction)
-                .HasForeignKey(r => r.receiver_id).OnDelete(DeleteBehavior.NoAction);
+                .WithMany(user => user.userAssignedProjects)
+                .HasForeignKey(r => r.receiver_id).OnDelete(DeleteBehavior.Cascade);
 
 
             modelBuilder.Entity<UserHasProjects>()

@@ -107,7 +107,9 @@ namespace ProjectManagementSystem.Controllers.ProjectControllers
             userAssignedProjectsRel.ForEach(rel=>
                     {
                         var project_dto = _mapper.Map<ReadProjectDto>(rel.project);
-                        project_dto.assigner_user = _mapper.Map<ReadUserDto>(rel.assignerUser);
+                        if (rel.assignerUser != null) {
+                            project_dto.assigner_user = _mapper.Map<ReadUserDto>(rel.assignerUser);
+                        }
                         userAssignedProjects.Add(project_dto);
                     }
                 );
@@ -116,7 +118,6 @@ namespace ProjectManagementSystem.Controllers.ProjectControllers
         }
 
         [HttpPost]
-        [Route("addproject")]
         public async Task<ActionResult<ReadProjectDto>> CreateProject(CreateProjectDto createProjectDto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -145,7 +146,7 @@ namespace ProjectManagementSystem.Controllers.ProjectControllers
         }
 
         [HttpDelete]
-        [Route("deleteproject/{id}")]
+        [Route("{id}")]
         public async Task<IActionResult> DeleteProject(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -156,13 +157,38 @@ namespace ProjectManagementSystem.Controllers.ProjectControllers
                 return NotFound(new { error = "User doesn't exists" });
             }
 
-            var project = await _context.projects.FindAsync(id);
+            var project = await _context.userHasProjects.Include(rel => rel.project)
+                .Where(rel => rel.user_id == userId && rel.project_id == id)
+                    .Select(rel => rel.project).FirstAsync();
 
             if (project==null) {
                 return NotFound();
             }
 
             _context.projects.Remove(project);
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpDelete]
+        [Route("assigned/{id}")]
+        public async Task<IActionResult> ExitAssignedProject(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return NotFound(new { error = "User doesn't exists" });
+            }
+            var projectRel = await _context.userAssignedProjects
+                .Where(rel => rel.receiver_id == userId && rel.project_id == id).FirstAsync();
+
+            if (projectRel == null)
+            {
+                return NotFound();
+            }
+            _context.userAssignedProjects.Remove(projectRel);
             await _context.SaveChangesAsync();
             return Ok();
         }

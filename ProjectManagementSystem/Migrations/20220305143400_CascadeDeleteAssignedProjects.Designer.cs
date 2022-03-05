@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjectManagementSystem.Data;
 
 namespace ProjectManagementSystem.Migrations
 {
     [DbContext(typeof(ManagementContext))]
-    partial class ManagementContextModelSnapshot : ModelSnapshot
+    [Migration("20220305143400_CascadeDeleteAssignedProjects")]
+    partial class CascadeDeleteAssignedProjects
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -779,13 +781,13 @@ namespace ProjectManagementSystem.Migrations
                     b.HasOne("ProjectManagementSystem.Models.ProjectElements.Board", "board")
                         .WithMany("boardHasAdmins")
                         .HasForeignKey("board_id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("ProjectManagementSystem.Models.UserElements.User", "user")
                         .WithMany("boardHasAdmins")
                         .HasForeignKey("user_id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("board");
@@ -798,13 +800,13 @@ namespace ProjectManagementSystem.Migrations
                     b.HasOne("ProjectManagementSystem.Models.ProjectElements.Board", "board")
                         .WithMany("boardHasTeams")
                         .HasForeignKey("board_id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("ProjectManagementSystem.Models.ProjectElements.Team", "team")
                         .WithMany("boardHasTeams")
                         .HasForeignKey("team_id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("board");
@@ -817,13 +819,13 @@ namespace ProjectManagementSystem.Migrations
                     b.HasOne("ProjectManagementSystem.Models.ProjectElements.Board", "board")
                         .WithMany("boardHasUsers")
                         .HasForeignKey("board_id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("ProjectManagementSystem.Models.UserElements.User", "user")
                         .WithMany("boardHasUsers")
                         .HasForeignKey("user_id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("board");
@@ -842,7 +844,7 @@ namespace ProjectManagementSystem.Migrations
                     b.HasOne("ProjectManagementSystem.Models.UserElements.User", "user")
                         .WithMany("jobHasUsers")
                         .HasForeignKey("user_id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("job");
@@ -855,13 +857,13 @@ namespace ProjectManagementSystem.Migrations
                     b.HasOne("ProjectManagementSystem.Models.ProjectElements.Team", "team")
                         .WithMany("teamHasUsers")
                         .HasForeignKey("team_id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("ProjectManagementSystem.Models.UserElements.User", "user")
                         .WithMany("teamHasUsers")
                         .HasForeignKey("user_id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("team");
