@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using ProjectManagementSystem.Dto.UserDto;
+using Newtonsoft.Json;
 
 namespace ProjectManagementSystem.Dto.ProjectDto
 {
@@ -12,7 +14,9 @@ namespace ProjectManagementSystem.Dto.ProjectDto
         public string projectDescription { get; set; }
         [Required]
         public DateTime startDate { get; set; } = DateTime.Now;
-        public DateTime endDate { get; set; }
+        public DateTime endDate { get; set; } = DateTime.MaxValue;
         public bool isFinished { get; set; }
+        
+        public ReadUserDto assigner_user { get; set; }
     }
 }

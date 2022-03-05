@@ -17,12 +17,12 @@ namespace ProjectManagementSystem.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
-            /*modelBuilder.Entity<User>()
-                .HasOne(u => u.password)
-                .WithOne(p => p.user)
-                .HasForeignKey<Passwords>(p=>p.user_id);*/
-
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Notification>()
+                .HasOne(t => t.owner_user)
+                .WithMany(p => p.notifications)
+                .HasForeignKey(t => t.owner_user_id);
 
             modelBuilder.Entity<Team>()
                 .HasOne(t => t.project)
@@ -166,12 +166,12 @@ namespace ProjectManagementSystem.Data
               .HasKey(r => new { r.user_id, r.project_id});
             modelBuilder.Entity<UserHasProjects>()
                 .HasOne(r => r.project)
-                .WithMany(project => project.userHasProjects).OnDelete(DeleteBehavior.NoAction)
-                .HasForeignKey(r => r.project_id).OnDelete(DeleteBehavior.NoAction);
+                .WithMany(project => project.userHasProjects)
+                .HasForeignKey(r => r.project_id).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<UserHasProjects>()
                 .HasOne(r => r.user)
-                .WithMany(user => user.userHasProjects).OnDelete(DeleteBehavior.NoAction)
-                .HasForeignKey(r => r.user_id).OnDelete(DeleteBehavior.NoAction);
+                .WithMany(user => user.userHasProjects)
+                .HasForeignKey(r => r.user_id).OnDelete(DeleteBehavior.Cascade);
 
 
 
@@ -183,7 +183,7 @@ namespace ProjectManagementSystem.Data
         public DbSet<UserAssignedProjects> userAssignedProjects { get; set; }
         public DbSet<TeamHasUsers> teamHasUsers { get; set; }
         public DbSet<JobHasUsers> taskHasUsers { get; set; }
-        //public DbSet<Passwords> passwords { get; set; }
+        public DbSet<Notification> notifications { get; set; }
 
         public DbSet<Project> projects { get; set; }
         public DbSet<Team> teams { get; set; }

@@ -9,20 +9,10 @@ namespace ProjectManagementSystem.Models.UserElements
 {
     public class User : IdentityUser
     {
-       /* [Required]
-        public string userName { get; set; }
-        [EmailAddress]
-        [Required]
-        public string email { get; set; }*/
         [Required]
         public string lastName { get; set; }
         [Required]
         public string firstName { get; set; }
-
-        /*[Required]
-        public string password { get; set; }*/
-
-        //public Passwords password { get; set; }
 
         public List<BoardHasAdmins> boardHasAdmins { get; set; }
         public List<BoardHasUsers> boardHasUsers { get; set; }
@@ -35,6 +25,7 @@ namespace ProjectManagementSystem.Models.UserElements
         public List<Job> userCreatedJobs { get; set; }
         public List<Job> userReceivedJobs { get; set; }
 
+        public List<Notification> notifications { get; set; }
 
     }
 }

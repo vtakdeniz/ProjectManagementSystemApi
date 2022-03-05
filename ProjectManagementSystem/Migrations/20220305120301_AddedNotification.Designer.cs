@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjectManagementSystem.Data;
 
 namespace ProjectManagementSystem.Migrations
 {
     [DbContext(typeof(ManagementContext))]
-    partial class ManagementContextModelSnapshot : ModelSnapshot
+    [Migration("20220305120301_AddedNotification")]
+    partial class AddedNotification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -525,7 +527,7 @@ namespace ProjectManagementSystem.Migrations
                     b.Property<string>("sender_user_id")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("target_type")
+                    b.Property<string>("target")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");

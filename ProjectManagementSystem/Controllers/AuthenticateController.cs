@@ -33,13 +33,7 @@ namespace ProjectManagementSystem.Controllers
             this.roleManager = roleManager;
             _configuration = configuration;
         }
-
-        [HttpGet("/test")]
-        public async Task<ActionResult<User>> GetUser()
-        {
-            return Ok();
-        }
-
+            
        [HttpPost]
        [Route("login")]
         public async Task<IActionResult> Login([FromBody] LoginUserDto model)
@@ -52,6 +46,7 @@ namespace ProjectManagementSystem.Controllers
                 var authClaims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 };
 
@@ -99,24 +94,27 @@ namespace ProjectManagementSystem.Controllers
 
             return Ok();
         }
-        
-        /*[HttpPost]
-        [Route("register-admin")]
-        public async Task<IActionResult> RegisterAdmin([FromBody] RegisterModel model)
-        {
-            var userExists = await userManager.FindByNameAsync(model.Username);
-            if (userExists != null)
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User already exists!" });
 
-            ApplicationUser user = new ApplicationUser()
+        /*
+        [HttpPost]
+        [Route("register-admin")]
+        public async Task<IActionResult> RegisterAdmin([FromBody] RegisterUserDto model)
+        {
+            var userExists = await userManager.FindByNameAsync(model.userName);
+            if (userExists != null)
+                return StatusCode(StatusCodes.Status500InternalServerError);
+
+            User user = new User()
             {
-                Email = model.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = model.Username
+                UserName = model.userName,
+                firstName = model.firstName,
+                lastName = model.lastName,
+                Email = model.email
             };
-            var result = await userManager.CreateAsync(user, model.Password);
+            var result = await userManager.CreateAsync(user, model.password);
             if (!result.Succeeded)
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
+                return StatusCode(StatusCodes.Status500InternalServerError);
 
             if (!await roleManager.RoleExistsAsync(UserRoles.Admin))
                 await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
@@ -128,7 +126,7 @@ namespace ProjectManagementSystem.Controllers
                 await userManager.AddToRoleAsync(user, UserRoles.Admin);
             }
 
-            return Ok(new Response { Status = "Success", Message = "User created successfully!" });
+            return Ok();
         }*/
 
     }

@@ -11,7 +11,7 @@ namespace ProjectManagementSystem.Dto.ProjectDto
         public string projectDescription { get; set; }
         [Required]
         public DateTime startDate { get; set; } = DateTime.Now;
-        public DateTime endDate { get; set; }
+        public DateTime endDate { get; set; } = DateTime.MaxValue;
         [IgnoreMap]
         public bool isFinished { get; set; } = false;
     }

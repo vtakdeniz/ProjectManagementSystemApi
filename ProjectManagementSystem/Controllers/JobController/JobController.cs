@@ -10,9 +10,9 @@ using ProjectManagementSystem.Models.JobElements;
 
 namespace ProjectManagementSystem.Controllers.JobController
 {
-    //TODO:Add repository
     [Route("api/[controller]")]
     [ApiController]
+    [Produces("application/json")]
     public class JobController : ControllerBase
     {
         private readonly ManagementContext _context;

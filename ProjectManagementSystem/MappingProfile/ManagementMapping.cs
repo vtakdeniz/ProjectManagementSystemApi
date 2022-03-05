@@ -6,6 +6,7 @@ using ProjectManagementSystem.Models.UserElements;
 using ProjectManagementSystem.Dto.UserDto;
 using ProjectManagementSystem.Dto.ProjectDto;
 using ProjectManagementSystem.Models.ProjectElements;
+using ProjectManagementSystem.Models.RelationTables;
 
 namespace ProjectManagementSystem.MappingProfile
 {

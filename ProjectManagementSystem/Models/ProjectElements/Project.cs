@@ -16,7 +16,7 @@ namespace ProjectManagementSystem.Models.ProjectElements
         public string projectDescription { get; set; }
         [Required]
         public DateTime startDate { get; set; } = DateTime.Now;
-        public DateTime endDate { get; set; }
+        public DateTime endDate { get; set; } = DateTime.MaxValue;
         public bool isFinished { get; set; } = false;
         public List<Team> teams { get; set; }
         public List<Board> boards { get; set; }

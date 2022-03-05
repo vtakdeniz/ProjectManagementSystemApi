@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjectManagementSystem.Data;
 
 namespace ProjectManagementSystem.Migrations
 {
     [DbContext(typeof(ManagementContext))]
-    partial class ManagementContextModelSnapshot : ModelSnapshot
+    [Migration("20220226173537_AddCascadeDeleteProj")]
+    partial class AddCascadeDeleteProj
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -490,57 +492,6 @@ namespace ProjectManagementSystem.Migrations
                     b.ToTable("userHasProjects");
                 });
 
-            modelBuilder.Entity("ProjectManagementSystem.Models.UserElements.Notification", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("action_type")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("jobId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("job_id")
-                        .HasColumnType("int");
-
-                    b.Property<string>("owner_user_id")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int?>("projectId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("project_id")
-                        .HasColumnType("int");
-
-                    b.Property<string>("sender_userId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("sender_user_id")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("target_type")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("jobId");
-
-                    b.HasIndex("owner_user_id");
-
-                    b.HasIndex("projectId");
-
-                    b.HasIndex("sender_userId");
-
-                    b.ToTable("notifications");
-                });
-
             modelBuilder.Entity("ProjectManagementSystem.Models.UserElements.User", b =>
                 {
                     b.Property<string>("Id")
@@ -915,35 +866,6 @@ namespace ProjectManagementSystem.Migrations
                     b.Navigation("user");
                 });
 
-            modelBuilder.Entity("ProjectManagementSystem.Models.UserElements.Notification", b =>
-                {
-                    b.HasOne("ProjectManagementSystem.Models.JobElements.Job", "job")
-                        .WithMany()
-                        .HasForeignKey("jobId");
-
-                    b.HasOne("ProjectManagementSystem.Models.UserElements.User", "owner_user")
-                        .WithMany("notifications")
-                        .HasForeignKey("owner_user_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjectManagementSystem.Models.ProjectElements.Project", "project")
-                        .WithMany()
-                        .HasForeignKey("projectId");
-
-                    b.HasOne("ProjectManagementSystem.Models.UserElements.User", "sender_user")
-                        .WithMany()
-                        .HasForeignKey("sender_userId");
-
-                    b.Navigation("job");
-
-                    b.Navigation("owner_user");
-
-                    b.Navigation("project");
-
-                    b.Navigation("sender_user");
-                });
-
             modelBuilder.Entity("ProjectManagementSystem.Models.JobElements.Job", b =>
                 {
                     b.Navigation("activityHistories");
@@ -1002,8 +924,6 @@ namespace ProjectManagementSystem.Migrations
                     b.Navigation("boardHasUsers");
 
                     b.Navigation("jobHasUsers");
-
-                    b.Navigation("notifications");
 
                     b.Navigation("teamHasUsers");
 

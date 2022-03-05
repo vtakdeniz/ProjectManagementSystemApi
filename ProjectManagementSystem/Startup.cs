@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using ProjectManagementSystem.Models.UserElements;
 using System.Text;
+using Microsoft.OpenApi.Models;
 
 namespace ProjectManagementSystem
 {
@@ -34,11 +35,25 @@ namespace ProjectManagementSystem
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ManagementContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("ProjectManagementSystemConnection")));
-            services.AddControllers();
 
-            services.AddControllers().AddNewtonsoftJson(s => {
-                s.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = "Project Management System Api",
+                    Description = "Project Management System Api",
+                    //TermsOfService = new Uri(""),
+                });
+            });
+
+            services.AddDbContext<ManagementContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("ProjectManagementSystemConnection")));
+
+            services.AddControllers()
+                .AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+                options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             });
 
             services.AddIdentity<User, IdentityRole>()
@@ -65,8 +80,8 @@ namespace ProjectManagementSystem
 
 
 
-
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -74,6 +89,13 @@ namespace ProjectManagementSystem
         {
             if (env.IsDevelopment())
             {
+
+                app.UseSwagger();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Project Management System v1");
+                });
+
                 app.UseDeveloperExceptionPage();
             }
 

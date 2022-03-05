@@ -9,107 +9,211 @@ using ProjectManagementSystem.Data;
 using ProjectManagementSystem.Models.ProjectElements;
 using AutoMapper;
 using ProjectManagementSystem.Dto.ProjectDto;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
+using ProjectManagementSystem.Models.UserElements;
+using Microsoft.AspNetCore.Authorization;
+using ProjectManagementSystem.Models.RelationTables;
+using ProjectManagementSystem.Dto.UserDto;
 
 namespace ProjectManagementSystem.Controllers.ProjectControllers
 {
-    //TODO:Add repository
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+    [Produces("application/json")]
     public class ProjectController : ControllerBase
     {
         private readonly ManagementContext _context;
         private readonly IMapper _mapper;
-        public ProjectController(ManagementContext context,IMapper mapper)
+        private readonly UserManager<User> _userManager;
+
+        public ProjectController(ManagementContext context,IMapper mapper, UserManager<User> userManager)
         {
             _context = context;
             _mapper = mapper;
+            _userManager = userManager;
         }
 
-        // GET: api/Project
+        [HttpGet("{id}", Name = "GetProject")]
+        public async Task<ActionResult<ReadProjectDto>> GetProject(int id) {
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return NotFound(new { error = "User doesn't exists" });
+            }
+
+
+            var userHasProjects = await _context.userHasProjects.FirstOrDefaultAsync(relation=>relation.project_id==id&&relation.user_id==user.Id);
+
+            if (userHasProjects==null) {
+                return NotFound();
+            }
+
+            return Ok(_mapper.Map<ReadProjectDto>(userHasProjects.project));
+        }
+
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Project>>> Getprojects()
+        public async Task<ActionResult<List<ReadProjectDto>>> GetProjects()
         {
-            var projects = await _context.projects.ToListAsync(); ;
-            return Ok(_mapper.Map<IEnumerable<ReadProjectDto>>(projects));
-                
-        }
 
-        // GET: api/Project/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Project>> GetProject(int id)
-        {
-            var project = await _context.projects.FindAsync(id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(userId);
 
-            if (project == null)
+            if (user == null)
+            {
+                return NotFound(new { error = "User doesn't exists in the current context" });
+            }
+
+
+            var userHasProjects = await _context.userHasProjects.Include(r=>r.project)
+                .Where(relation => relation.user_id == user.Id)
+                    .Select(r=>r.project).ToListAsync();
+            
+            if (userHasProjects == null)
             {
                 return NotFound();
             }
 
-            return Ok(_mapper.Map<ReadProjectDto>(project));
+            return Ok(_mapper.Map<IEnumerable<ReadProjectDto>>(userHasProjects));
         }
 
-        // PUT: api/Project/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutProject(int id, Project project)
+        [HttpGet]
+        [Route("assigned")]
+        public async Task<ActionResult<List<ReadProjectDto>>> GetAssignedProjects()
         {
-            if (id != project.Id)
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
             {
-                return BadRequest();
+                return NotFound(new { error = "User doesn't exists in the current context" });
             }
 
-            _context.Entry(project).State = EntityState.Modified;
+            var userAssignedProjectsRel = await _context.userAssignedProjects.Include(r => r.project).Include(r=>r.assignerUser)
+                .Where(relation => relation.receiver_id == userId).ToListAsync();
 
-            try
+            if (userAssignedProjectsRel == null)
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ProjectExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound();
             }
 
-            return NoContent();
+            var userAssignedProjects = new List<ReadProjectDto>();
+
+            userAssignedProjectsRel.ForEach(rel=>
+                    {
+                        var project_dto = _mapper.Map<ReadProjectDto>(rel.project);
+                        project_dto.assigner_user = _mapper.Map<ReadUserDto>(rel.assignerUser);
+                        userAssignedProjects.Add(project_dto);
+                    }
+                );
+           
+            return Ok(userAssignedProjects);
         }
 
-        // POST: api/Project
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Project>> PostProject(CreateProjectDto projectDto)
+        [Route("addproject")]
+        public async Task<ActionResult<ReadProjectDto>> CreateProject(CreateProjectDto createProjectDto)
         {
-            var project = _mapper.Map<Project>(projectDto);
-            await _context.projects.AddAsync(project);
-            await _context.SaveChangesAsync();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(userId);
 
+            if (user == null)
+            {
+                return NotFound(new { error = "User doesn't exists" });
+            }
+
+            var project = _mapper.Map<Project>(createProjectDto);
+
+            var userHasProjects = new UserHasProjects
+            {
+                user = user,
+                user_id = user.Id,
+                project = project,
+                project_id = project.Id
+            };
+
+            await _context.projects.AddAsync(project);
+            await _context.userHasProjects.AddAsync(userHasProjects);
+            await _context.SaveChangesAsync();
             return CreatedAtAction("GetProject", new { id = project.Id }, _mapper.Map<ReadProjectDto>(project));
+
         }
 
-        // DELETE: api/Project/5
-        [HttpDelete("{id}")]
+        [HttpDelete]
+        [Route("deleteproject/{id}")]
         public async Task<IActionResult> DeleteProject(int id)
         {
-            var project = await _context.projects.FindAsync(id);
-            if (project == null)
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
             {
+                return NotFound(new { error = "User doesn't exists" });
+            }
+
+            var project = await _context.projects.FindAsync(id);
+
+            if (project==null) {
                 return NotFound();
             }
 
             _context.projects.Remove(project);
             await _context.SaveChangesAsync();
-
-            return NoContent();
+            return Ok();
         }
 
-        private bool ProjectExists(int id)
-        {
-            return _context.projects.Any(e => e.Id == id);
+
+        [HttpPost]
+        [Route("assignproject")]
+        public async Task<ActionResult> AssignProject([FromQuery] int projectid, string targetid) {
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return NotFound(new { error = "User doesn't exists" });
+            }
+
+            var project = await _context.projects.FindAsync(projectid);
+
+            if (project == null)
+            {
+                return NotFound();
+            }
+
+            var targetUser = await _context.Users.Include(u => u.notifications).FirstOrDefaultAsync(u => u.Id == targetid);
+            
+            if (targetUser == null) {
+                return NotFound();
+            }
+
+            var userHasProject=targetUser.notifications.Any(n => n.project_id == projectid);
+
+            if (userHasProject) {
+                return BadRequest();
+            }
+
+
+            targetUser.notifications.Add(new Notification
+            {
+                owner_user_id=targetid,
+                action_type=NotificationConstants.ACTION_TYPE_ASSIGN,
+                target_type=NotificationConstants.TARGET_PROJECT,
+                sender_user_id=userId,
+                project_id=projectid
+            });
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
         }
+
+
     }
 }
