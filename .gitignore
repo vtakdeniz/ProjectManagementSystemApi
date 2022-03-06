@@ -405,8 +405,12 @@ ASALocalRun/
 .localhistory/
 
 appsetting.json
+ProjectManagementSystem/appsettings.json
 launchSettings.json
 Properties/
 startenv.sh
 ProjectManagementSystem.csproj
-ProjectManagementSystem.csproj
+ProjectManagementSystem/appsettings.Development.json
+ProjectManagementSystem.sln
+
+
