@@ -193,7 +193,6 @@ namespace ProjectManagementSystem.Controllers.ProjectControllers
             return Ok();
         }
 
-
         [HttpPost]
         [Route("assignproject")]
         public async Task<ActionResult> AssignProject([FromQuery] int projectid, string targetid) {
