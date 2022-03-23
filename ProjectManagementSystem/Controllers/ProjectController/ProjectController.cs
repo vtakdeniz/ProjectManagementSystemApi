@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using ProjectManagementSystem.Models.RelationTables;
 using ProjectManagementSystem.Dto.UserDto;
 
-namespace ProjectManagementSystem.Controllers.ProjectControllers
+namespace ProjectManagementSystem.Controllers.ProjectController
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -38,8 +38,7 @@ namespace ProjectManagementSystem.Controllers.ProjectControllers
         [HttpGet("{id}", Name = "GetProject")]
         public async Task<ActionResult<ReadProjectDto>> GetProject(int id) {
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await GetIdentityUser();
 
             if (user == null)
             {
@@ -47,7 +46,9 @@ namespace ProjectManagementSystem.Controllers.ProjectControllers
             }
 
 
-            var userHasProjects = await _context.userHasProjects.FirstOrDefaultAsync(relation=>relation.project_id==id&&relation.user_id==user.Id);
+            var userHasProjects = await _context.userHasProjects
+                .Include(rel=>rel.project)
+                .FirstOrDefaultAsync(relation=>relation.project_id==id&&relation.user_id==user.Id);
 
             if (userHasProjects==null) {
                 return NotFound();
@@ -59,9 +60,7 @@ namespace ProjectManagementSystem.Controllers.ProjectControllers
         [HttpGet]
         public async Task<ActionResult<List<ReadProjectDto>>> GetProjects()
         {
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await GetIdentityUser();
 
             if (user == null)
             {
@@ -85,17 +84,17 @@ namespace ProjectManagementSystem.Controllers.ProjectControllers
         [Route("assigned")]
         public async Task<ActionResult<List<ReadProjectDto>>> GetAssignedProjects()
         {
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await GetIdentityUser();
 
             if (user == null)
             {
                 return NotFound(new { error = "User doesn't exists in the current context" });
             }
 
-            var userAssignedProjectsRel = await _context.userAssignedProjects.Include(r => r.project).Include(r=>r.assignerUser)
-                .Where(relation => relation.receiver_id == userId).ToListAsync();
+            var userAssignedProjectsRel = await _context.userAssignedProjects
+                .Include(r => r.project)
+                .Include(r=>r.assignerUser)
+                .Where(relation => relation.receiver_id == user.Id).ToListAsync();
 
             if (userAssignedProjectsRel == null)
             {
@@ -120,8 +119,7 @@ namespace ProjectManagementSystem.Controllers.ProjectControllers
         [HttpPost]
         public async Task<ActionResult<ReadProjectDto>> CreateProject(CreateProjectDto createProjectDto)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await GetIdentityUser();
 
             if (user == null)
             {
@@ -149,8 +147,7 @@ namespace ProjectManagementSystem.Controllers.ProjectControllers
         [Route("{id}")]
         public async Task<IActionResult> DeleteProject(int id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await GetIdentityUser();
 
             if (user == null)
             {
@@ -158,7 +155,7 @@ namespace ProjectManagementSystem.Controllers.ProjectControllers
             }
 
             var project = await _context.userHasProjects.Include(rel => rel.project)
-                .Where(rel => rel.user_id == userId && rel.project_id == id)
+                .Where(rel => rel.user_id == user.Id && rel.project_id == id)
                     .Select(rel => rel.project).FirstAsync();
 
             if (project==null) {
@@ -174,15 +171,15 @@ namespace ProjectManagementSystem.Controllers.ProjectControllers
         [Route("assigned/{id}")]
         public async Task<IActionResult> ExitAssignedProject(int id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await GetIdentityUser();
 
             if (user == null)
             {
                 return NotFound(new { error = "User doesn't exists" });
             }
             var projectRel = await _context.userAssignedProjects
-                .Where(rel => rel.receiver_id == userId && rel.project_id == id).FirstAsync();
+                .Where(rel => rel.receiver_id == user.Id && rel.project_id == id)
+                .FirstAsync();
 
             if (projectRel == null)
             {
@@ -197,12 +194,11 @@ namespace ProjectManagementSystem.Controllers.ProjectControllers
         [Route("assignproject")]
         public async Task<ActionResult> AssignProject([FromQuery] int projectid, string targetid) {
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await GetIdentityUser();
 
             if (user == null)
             {
-                return NotFound(new { error = "User doesn't exists" });
+                return NotFound(new { error = "User doesn't exists in the current context" });
             }
 
             var project = await _context.projects.FindAsync(projectid);
@@ -212,7 +208,8 @@ namespace ProjectManagementSystem.Controllers.ProjectControllers
                 return NotFound();
             }
 
-            var targetUser = await _context.Users.Include(u => u.notifications).FirstOrDefaultAsync(u => u.Id == targetid);
+            var targetUser = await _context.Users.Include(u => u.notifications)
+                .FirstOrDefaultAsync(u => u.Id == targetid);
             
             if (targetUser == null) {
                 return NotFound();
@@ -230,7 +227,7 @@ namespace ProjectManagementSystem.Controllers.ProjectControllers
                 owner_user_id=targetid,
                 action_type=NotificationConstants.ACTION_TYPE_ASSIGN,
                 target_type=NotificationConstants.TARGET_PROJECT,
-                sender_user_id=userId,
+                sender_user_id=user.Id,
                 project_id=projectid
             });
 
@@ -239,6 +236,71 @@ namespace ProjectManagementSystem.Controllers.ProjectControllers
             return Ok();
         }
 
+        [HttpGet]
+        [Route("boards/{id}")]
+        public async Task<ActionResult<List<Board>>> GetBoardsOfProject(int id) {
+
+            var user = await GetIdentityUser();
+
+            if (user == null)
+            {
+                return NotFound(new { error = "User doesn't exists in the current context" });
+            }
+
+            var project = await _context.projects.AnyAsync(p=>p.Id==id);
+
+            if (!project)
+            {
+                return NotFound();
+            }
+
+            var relProjectToUser = await _context.userHasProjects
+                .AnyAsync(rel => rel.project_id == id && rel.user_id == user.Id);
+
+            if (!relProjectToUser) {
+                return Unauthorized();
+            }
+
+            var boards = await _context.boards.Where(board => board.project_id == id).ToListAsync();
+
+            return Ok(boards);
+        }
+
+        [HttpGet("teams/{id}", Name = "GetTeamsOfProject")]
+        public async Task<ActionResult<ReadTeamDto>> GetTeamsOfProject(int id)
+        {
+            var user = await GetIdentityUser();
+
+            if (user == null)
+            {
+                return NotFound(new { error = "User doesn't exists in the current context" });
+            }
+
+
+            var isUserAuthorized = await _context.userHasProjects
+                .AnyAsync(relation => relation.project_id == id
+                    && relation.user_id == user.Id);
+
+            if (!isUserAuthorized)
+            {
+                return Unauthorized();
+            }
+
+            var teams = await _context.teams
+                .Where(team => team.project_id == id)
+                .ToListAsync();
+
+            return Ok(_mapper.Map<List<ReadTeamDto>>(teams));
+        }
+
+
+        [ApiExplorerSettings(IgnoreApi = true)]
+        [NonAction]
+        private async Task<User> GetIdentityUser() {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(userId);
+            return user;
+        }
 
     }
 }

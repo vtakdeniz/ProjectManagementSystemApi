@@ -77,7 +77,8 @@ namespace ProjectManagementSystem.Controllers
         public async Task<IActionResult> Register([FromBody] RegisterUserDto model)
         {
             var userExists = await userManager.FindByNameAsync(model.userName);
-            if (userExists != null)
+            var userEmailExists = await userManager.FindByEmailAsync(model.email);
+            if (userExists != null || userEmailExists!=null)
                 return BadRequest();
 
             User user = new User()

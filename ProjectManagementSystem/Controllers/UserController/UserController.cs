@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Identity;
 using ProjectManagementSystem.Dto.ProjectDto;
 using ProjectManagementSystem.Models.RelationTables;
 
-namespace ProjectManagementSystem.Controllers.UserControllers
+namespace ProjectManagementSystem.Controllers.UserController
 {
     //TODO:Implement error model
     
