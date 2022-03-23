@@ -16,4 +16,5 @@ dotnet add package Microsoft.AspNetCore.Identity
 
 dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 5.0.14
 
+
 dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore --version 5.0.10
