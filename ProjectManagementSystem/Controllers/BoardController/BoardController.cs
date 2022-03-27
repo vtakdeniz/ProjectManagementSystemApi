@@ -69,7 +69,7 @@ namespace ProjectManagementSystem.Controllers.BoardController
         }
 
         [HttpPost]
-        public async Task<ActionResult<Board>> PostBoard([FromBody]CreateBoardDto boardDto) {
+        public async Task<ActionResult<ReadBoardDto>> PostBoard([FromBody]CreateBoardDto boardDto) {
 
             var user = await GetIdentityUser();
 
@@ -228,7 +228,7 @@ namespace ProjectManagementSystem.Controllers.BoardController
             return Ok();
         }
 
-        [HttpPost]
+        [HttpPost("addteam")]
         public async Task<ActionResult> AddTeamToBoard([FromQuery] int team_id,[FromQuery] int board_id) {
             var user = await GetIdentityUser();
 

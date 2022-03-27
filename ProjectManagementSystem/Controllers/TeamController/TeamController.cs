@@ -15,12 +15,14 @@ using ProjectManagementSystem.Models.JobElements;
 using ProjectManagementSystem.Models.ProjectElements;
 using ProjectManagementSystem.Models.RelationTables;
 using ProjectManagementSystem.Models.UserElements;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ProjectManagementSystem.Controllers.TeamController
-{
+{   
 
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     [Produces("application/json")]
     public class TeamController : ControllerBase
     {
