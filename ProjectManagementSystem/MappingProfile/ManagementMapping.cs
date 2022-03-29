@@ -33,6 +33,8 @@ namespace ProjectManagementSystem.MappingProfile
             CreateMap<Team, ReadTeamDto>();
             CreateMap<CreateTeamDto, Team>();
 
+            CreateMap<CreateSectionDto, Section>();
+
         }
     }
 }

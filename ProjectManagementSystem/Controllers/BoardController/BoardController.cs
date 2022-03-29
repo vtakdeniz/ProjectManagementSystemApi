@@ -89,18 +89,21 @@ namespace ProjectManagementSystem.Controllers.BoardController
             var board = _mapper.Map<Board>(boardDto);
             await _context.boards.AddAsync(board);
 
-            var boardHasAdminsRel = new BoardHasAdmins
-            {
-                board_id = boardDto.Id,
-                user_id = user.Id
-            };
-
-            await _context.boardHasAdmins.AddAsync(boardHasAdminsRel);
-
             if (boardDto.team_ids == null && boardDto.user_ids == null)
             {
                 await _context.SaveChangesAsync();
-                return CreatedAtAction("GetBoard", new { id = boardDto.Id }, _mapper.Map<ReadBoardDto>(boardDto));
+
+                var boardHasAdminsRelation = new BoardHasAdmins
+                {
+                    board_id = board.Id,
+                    user_id = user.Id
+                };
+
+                await _context.boardHasAdmins.AddAsync(boardHasAdminsRelation);
+
+                await _context.SaveChangesAsync();
+
+                return CreatedAtAction("GetBoard", new { id = board.Id }, _mapper.Map<ReadBoardDto>(board));
             }
             else
             {
@@ -122,6 +125,14 @@ namespace ProjectManagementSystem.Controllers.BoardController
                     return BadRequest();
                 }
             }
+
+            var boardHasAdminsRel = new BoardHasAdmins
+            {
+                board_id = board.Id,
+                user_id = user.Id
+            };
+
+            await _context.boardHasAdmins.AddAsync(boardHasAdminsRel);
 
             await _context.SaveChangesAsync();
 
@@ -173,7 +184,7 @@ namespace ProjectManagementSystem.Controllers.BoardController
                 });
             }
 
-            return CreatedAtAction("GetBoard",new { id=boardDto.Id }, _mapper.Map<ReadBoardDto>(boardDto));
+            return CreatedAtAction("GetBoard",new { id=board.Id }, _mapper.Map<ReadBoardDto>(board));
         }
 
         // TODO : Change method update to patch
@@ -234,6 +245,11 @@ namespace ProjectManagementSystem.Controllers.BoardController
 
             var boardFromRepo = await _context.boards.FindAsync(board_id);
 
+            if (boardFromRepo == null)
+            {
+                return NotFound();
+            }
+
             var isUserAuthorized = await _context.userHasProjects
                 .AnyAsync(rel=>rel.project_id==boardFromRepo.project_id &&
                     rel.user_id==user.Id);
@@ -279,6 +295,58 @@ namespace ProjectManagementSystem.Controllers.BoardController
             return Ok();
         }
 
+        [HttpPost("addsection")]
+        public async Task<ActionResult<CreateSectionDto>> AddSection(CreateSectionDto sectionDto) {
+            var user = await GetIdentityUser();
+
+            var boardFromRepo = await _context.boards.FindAsync(sectionDto.board_id);
+
+            if (boardFromRepo == null) {
+                return NotFound();
+            }
+
+            var isUserAuthorized = await _context.userHasProjects
+                .AnyAsync(rel => rel.project_id == boardFromRepo.project_id &&
+                    rel.user_id == user.Id);
+
+            if (!isUserAuthorized)
+            {
+                return Unauthorized();
+            }
+
+            var section = _mapper.Map<Section>(sectionDto);
+
+            await _context.sections.AddAsync(section);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtRoute("addsection",sectionDto);
+        }
+
+        [HttpDelete("removesection/{id}")]
+        public async Task<ActionResult> DeleteSection(int id) {
+            var user = await GetIdentityUser();
+
+            var sectionFromRepo = await _context.sections.Include(section=>section.board).FirstAsync(section=>section.Id==id);
+            
+            if (sectionFromRepo == null)
+            {
+                return NotFound();
+            }
+
+            var isUserAuthorized = await _context.userHasProjects
+                .AnyAsync(rel => rel.project_id == sectionFromRepo.board.project_id &&
+                    rel.user_id == user.Id);
+
+            if (!isUserAuthorized)
+            {
+                return Unauthorized();
+            }
+
+            _context.sections.Remove(sectionFromRepo);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
 
         [ApiExplorerSettings(IgnoreApi = true)]
         [NonAction]
