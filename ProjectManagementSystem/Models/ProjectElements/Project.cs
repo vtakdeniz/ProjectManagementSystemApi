@@ -23,6 +23,5 @@ namespace ProjectManagementSystem.Models.ProjectElements
         public List<UserAssignedProjects> userAssignedProjects { get; set; }
         public List<UserHasProjects> userHasProjects{ get; set; }
         public List<Job> projectJobs { get; set; }
-
     }
 }

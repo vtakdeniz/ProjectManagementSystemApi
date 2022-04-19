@@ -5,5 +5,6 @@ namespace ProjectManagementSystem.Models.UserElements
     {
         public const string ACTION_TYPE_ASSIGN = "ASSIGN";
         public const string TARGET_PROJECT = "PROJECT";
+        public const string TARGET_BOARD= "PROJECT";
     }
 }

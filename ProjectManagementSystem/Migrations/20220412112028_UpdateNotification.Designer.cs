@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjectManagementSystem.Data;
 
 namespace ProjectManagementSystem.Migrations
 {
     [DbContext(typeof(ManagementContext))]
-    partial class ManagementContextModelSnapshot : ModelSnapshot
+    [Migration("20220412112028_UpdateNotification")]
+    partial class UpdateNotification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -183,22 +185,8 @@ namespace ProjectManagementSystem.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime?>("createdOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<byte[]>("fileData")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("fileType")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<int>("job_id")
                         .HasColumnType("int");
-
-                    b.Property<string>("name")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
@@ -255,17 +243,11 @@ namespace ProjectManagementSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("projectId")
-                        .HasColumnType("int");
-
                     b.Property<int>("project_id")
                         .HasColumnType("int");
 
                     b.Property<string>("receiverUserId")
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<int?>("sectionId")
-                        .HasColumnType("int");
 
                     b.Property<int>("section_id")
                         .HasColumnType("int");
@@ -277,11 +259,11 @@ namespace ProjectManagementSystem.Migrations
 
                     b.HasIndex("createUserId");
 
-                    b.HasIndex("projectId");
+                    b.HasIndex("project_id");
 
                     b.HasIndex("receiverUserId");
 
-                    b.HasIndex("sectionId");
+                    b.HasIndex("section_id");
 
                     b.ToTable("jobs");
                 });
@@ -749,7 +731,9 @@ namespace ProjectManagementSystem.Migrations
 
                     b.HasOne("ProjectManagementSystem.Models.ProjectElements.Project", "project")
                         .WithMany("projectJobs")
-                        .HasForeignKey("projectId");
+                        .HasForeignKey("project_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("ProjectManagementSystem.Models.UserElements.User", "receiverUser")
                         .WithMany("userReceivedJobs")
@@ -758,7 +742,9 @@ namespace ProjectManagementSystem.Migrations
 
                     b.HasOne("ProjectManagementSystem.Models.ProjectElements.Section", "section")
                         .WithMany("jobs")
-                        .HasForeignKey("sectionId");
+                        .HasForeignKey("section_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("createUser");
 

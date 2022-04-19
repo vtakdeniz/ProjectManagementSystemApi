@@ -16,6 +16,7 @@ using ProjectManagementSystem.Models.ProjectElements;
 using ProjectManagementSystem.Models.RelationTables;
 using ProjectManagementSystem.Models.UserElements;
 using Microsoft.AspNetCore.Authorization;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace ProjectManagementSystem.Controllers.TeamController
 {   
@@ -63,7 +64,8 @@ namespace ProjectManagementSystem.Controllers.TeamController
 
             return Ok(_mapper.Map<ReadTeamDto>(team));
         }
-        
+
+        [SwaggerOperation(Summary = "Create a team for a project")]
         [HttpPost]
         public async Task<ActionResult<ReadTeamDto>> CreateTeam(CreateTeamDto teamDto) {
 
@@ -124,6 +126,99 @@ namespace ProjectManagementSystem.Controllers.TeamController
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetTeam", new { id = team.Id }, _mapper.Map<ReadTeamDto>(team));
+        }
+
+        [SwaggerOperation(Summary = "Remove a team from the board")]
+        [HttpDelete("delete")]
+        public async Task<ActionResult> RemoveTeamFromBoard([FromQuery] int team_id, [FromQuery] int board_id)
+        {
+            var user = await GetIdentityUser();
+
+            var boardFromRepo = await _context.boards.FindAsync(board_id);
+
+            if (boardFromRepo == null)
+            {
+                return NotFound();
+            }
+
+            var isUserAuthorized = await _context.userHasProjects
+                .AnyAsync(rel => rel.project_id == boardFromRepo.project_id && rel.user_id == user.Id)
+                ||
+                await _context.boardHasAdmins
+                .AnyAsync(rel => rel.board_id == boardFromRepo.Id && rel.user_id == user.Id);
+
+            if (!isUserAuthorized)
+            {
+                return Unauthorized();
+            }
+
+            var boardHasTeamsRel = await _context.boardHasTeams
+                .FirstAsync(rel => rel.team_id == team_id && rel.board_id == board_id);
+
+            _context.boardHasTeams.Remove(boardHasTeamsRel);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+
+
+        [SwaggerOperation(Summary = "Add a team that is in the same project with the board, to the board")]
+        [HttpPost("add")]
+        public async Task<ActionResult> AddTeamToBoard([FromQuery] int team_id, [FromQuery] int board_id)
+        {
+            var user = await GetIdentityUser();
+
+            var boardFromRepo = await _context.boards.FindAsync(board_id);
+
+            if (boardFromRepo == null)
+            {
+                return NotFound();
+            }
+
+            var isUserAuthorized = await _context.userHasProjects
+                .AnyAsync(rel => rel.project_id == boardFromRepo.project_id &&
+                    rel.user_id == user.Id);
+
+            if (!isUserAuthorized)
+            {
+                return Unauthorized();
+            }
+
+            var relsInBoardProject = await _context.teamHasUsers
+                .Include(rel => rel.team)
+                .Include(rel => rel.user)
+                .Where(rel => rel.team.project_id == boardFromRepo.project_id &&
+                    rel.team.Id == team_id)
+                .ToListAsync();
+
+            if (relsInBoardProject == null)
+            {
+                return BadRequest();
+            }
+            await _context.boardHasTeams.AddAsync(
+                    new BoardHasTeams
+                    {
+                        board_id = board_id,
+                        team_id = team_id
+                    }
+                );
+            var usersFromTeams = relsInBoardProject
+                    .Select(rel => rel.user).ToList();
+
+            usersFromTeams.ForEach(async user =>
+            {
+                await _context.boardHasUsers.AddAsync(
+                        new BoardHasUsers
+                        {
+                            user_id = user.Id,
+                            board_id = board_id
+                        }
+                    );
+            });
+            await _context.SaveChangesAsync();
+
+            return Ok();
         }
 
         [ApiExplorerSettings(IgnoreApi = true)]

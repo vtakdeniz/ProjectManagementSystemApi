@@ -15,6 +15,7 @@ using ProjectManagementSystem.Models.JobElements;
 using ProjectManagementSystem.Models.ProjectElements;
 using ProjectManagementSystem.Models.RelationTables;
 using ProjectManagementSystem.Models.UserElements;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace ProjectManagementSystem.Controllers.BoardController
 {
@@ -36,7 +37,6 @@ namespace ProjectManagementSystem.Controllers.BoardController
 
         [HttpGet("{id}", Name = "GetBoard")]
         public async Task<ActionResult<ReadBoardDto>> GetBoard(int id) {
-
             var user = await GetIdentityUser();
 
             var boardList = await _context.boards
@@ -51,7 +51,6 @@ namespace ProjectManagementSystem.Controllers.BoardController
                 .ThenInclude(rel=>rel.user)
                 .Where(board => board.Id == id).ToListAsync();
             
-
             if (boardList == null) {
                 return NotFound();
             }
@@ -68,41 +67,31 @@ namespace ProjectManagementSystem.Controllers.BoardController
             return Ok(_mapper.Map<ReadBoardDto>(board));
         }
 
+        [SwaggerOperation(Summary = "Create a board, give user and team id's to add them to the board automatically")]
         [HttpPost]
         public async Task<ActionResult<ReadBoardDto>> PostBoard([FromBody]CreateBoardDto boardDto) {
-
             var user = await GetIdentityUser();
-
             if (user == null)
             {
                 return NotFound(new { error = "User doesn't exists in the current context" });
             }
-
             var project_id = boardDto.project_id;
             var isUserAuthorized = await _context.userHasProjects
                 .AnyAsync(rel => rel.project_id == project_id && rel.user_id == user.Id);
-
-            if (!isUserAuthorized) {
+            if (!isUserAuthorized) 
                 return Unauthorized();
-            }
-
             var board = _mapper.Map<Board>(boardDto);
             await _context.boards.AddAsync(board);
-
             if (boardDto.team_ids == null && boardDto.user_ids == null)
             {
                 await _context.SaveChangesAsync();
-
                 var boardHasAdminsRelation = new BoardHasAdmins
                 {
                     board_id = board.Id,
                     user_id = user.Id
                 };
-
                 await _context.boardHasAdmins.AddAsync(boardHasAdminsRelation);
-
                 await _context.SaveChangesAsync();
-
                 return CreatedAtAction("GetBoard", new { id = board.Id }, _mapper.Map<ReadBoardDto>(board));
             }
             else
@@ -111,31 +100,23 @@ namespace ProjectManagementSystem.Controllers.BoardController
                    .All(id => _context.userHasProjects.Any(rel => rel.user_id == id &&
                         rel.project_id == board.project_id));
 
-                if (areAllDtoUsersValid!=null||!areAllDtoUsersValid.Value)
-                {
+                if (boardDto.user_ids!= null||!areAllDtoUsersValid.Value)
                     return BadRequest();
-                }
 
                 bool? areAllDtoTeamsValid = boardDto.team_ids?
                    .All(id => _context.teams.Any(team => team.Id == id &&
                        team.project_id == board.project_id));
 
-                if (areAllDtoTeamsValid!=null||!areAllDtoUsersValid.Value)
-                {
+                if (boardDto.team_ids != null||!areAllDtoUsersValid.Value)
                     return BadRequest();
-                }
             }
-
             var boardHasAdminsRel = new BoardHasAdmins
             {
                 board_id = board.Id,
                 user_id = user.Id
             };
-
             await _context.boardHasAdmins.AddAsync(boardHasAdminsRel);
-
             await _context.SaveChangesAsync();
-
             if (boardDto.team_ids!=null) {
                 var projectTeamRel = await _context.teams
                 .Where(team => team.project_id == boardDto.project_id
@@ -144,7 +125,6 @@ namespace ProjectManagementSystem.Controllers.BoardController
                 .Include(team => team.teamHasUsers)
                 .ThenInclude(rel => rel.user)
                 .ToListAsync();
-
                 foreach (Team team in projectTeamRel)
                 {
                     await _context.boardHasTeams.AddAsync(
@@ -165,7 +145,6 @@ namespace ProjectManagementSystem.Controllers.BoardController
                     });
                 }
             }
-
             if (boardDto.user_ids != null) {
                 var projectUserRel = await _context.userAssignedProjects
                 .Where(rel => boardDto.user_ids.Any(id => id == rel.receiver_id) &&
@@ -183,7 +162,6 @@ namespace ProjectManagementSystem.Controllers.BoardController
                         );
                 });
             }
-
             return CreatedAtAction("GetBoard",new { id=board.Id }, _mapper.Map<ReadBoardDto>(board));
         }
 
@@ -227,7 +205,8 @@ namespace ProjectManagementSystem.Controllers.BoardController
             }
 
             var project_id = boardFromRepo.project_id;
-            var isUserAuthorized = await _context.userHasProjects.AnyAsync(rel => rel.project_id == project_id && rel.user_id == user.Id);
+            var isUserAuthorized = await _context.userHasProjects
+                .AnyAsync(rel => rel.project_id == project_id && rel.user_id == user.Id);
 
             if (!isUserAuthorized)
             {
@@ -238,113 +217,132 @@ namespace ProjectManagementSystem.Controllers.BoardController
             await _context.SaveChangesAsync();
             return Ok();
         }
+        
+        [SwaggerOperation(Summary = "Add a person from the project, to the project")]
+        [HttpPost("adduser")]
+        public async Task<ActionResult> AddUserToBoardFromProject([FromQuery]string user_id, [FromQuery]int board_id) {
 
-        [HttpPost("addteam")]
-        public async Task<ActionResult> AddTeamToBoard([FromQuery] int team_id,[FromQuery] int board_id) {
             var user = await GetIdentityUser();
 
+            if (user == null)
+            {
+                return NotFound(new { error = "User doesn't exists in the current context" });
+            }
+
+            var userToAdd = await _userManager.FindByIdAsync(user_id);
             var boardFromRepo = await _context.boards.FindAsync(board_id);
 
+            if (userToAdd == null||boardFromRepo==null)
+            {
+                return NotFound();
+            }
+
+            var project_id = boardFromRepo.project_id;
+
+            var isUserAuthorized = await _context.userHasProjects
+                .AnyAsync(rel => rel.project_id == project_id && rel.user_id == user.Id);
+
+            if (!isUserAuthorized)
+            {
+                return Unauthorized();
+            }
+
+            var isUserInBoard = await _context.boardHasUsers
+                .AnyAsync(rel => rel.board_id == boardFromRepo.Id && rel.user_id == user.Id)
+                ||
+                await _context.boardHasAdmins
+                .AnyAsync(rel => rel.board_id == boardFromRepo.Id && rel.user_id == user.Id);
+
+            var isUserInProject = await _context.userHasProjects
+                .AnyAsync(rel=>rel.user_id==user_id&&project_id==boardFromRepo.project_id)
+                ||
+                await _context.userAssignedProjects
+                .AnyAsync(rel => rel.receiver_id == user_id && project_id == boardFromRepo.project_id);
+
+            if (isUserInBoard && !isUserInProject) {
+                return BadRequest();
+            }
+
+            var rel = new BoardHasUsers()
+            {
+                user_id=user_id,
+                board_id=board_id
+            };
+
+            await _context.boardHasUsers.AddAsync(rel);
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        [SwaggerOperation(Summary = "Remove a user from the board")]
+        [HttpPost("removeuser")]
+        public async Task<ActionResult> RemoveUserFromBoard([FromQuery] string user_id, [FromQuery] int board_id)
+        {
+            var user = await GetIdentityUser();
+            if (user == null)
+                return NotFound(new { error = "User doesn't exists in the current context" });
+            var userToAdd = await _userManager.FindByIdAsync(user_id);
+            var board = await _context.boards.FindAsync(board_id);
+            if (userToAdd == null || board == null)
+                return NotFound();
+            var project_id = board.project_id;
+            var isUserAuthorized = await _context.userHasProjects
+                .AnyAsync(rel => rel.project_id == project_id && rel.user_id == user.Id);
+            if (!isUserAuthorized)
+                return Unauthorized();
+            var isUserInBoard = await _context.boardHasUsers
+                .AnyAsync(rel => rel.board_id == board.Id && rel.user_id == user.Id)
+                ||
+                await _context.boardHasAdmins
+                .AnyAsync(rel => rel.board_id == board.Id && rel.user_id == user.Id);
+            if (isUserInBoard)
+                return BadRequest();
+            var rel = await _context.boardHasUsers
+                .FirstAsync(rel=>rel.board_id==board_id&&rel.user_id==user_id);
+            _context.boardHasUsers.Remove(rel);
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("assignproject")]
+        public async Task<ActionResult> AssignBoard([FromQuery] int board_id, [FromQuery] string user_id)
+        {
+            var user = await GetIdentityUser();
+            if (user == null)
+            {
+                return NotFound(new { error = "User doesn't exists in the current context" });
+            }
+            var boardFromRepo = await _context.boards.FindAsync(board_id);
             if (boardFromRepo == null)
             {
                 return NotFound();
             }
+            var targetUser = await _context.Users.Include(u => u.notifications)
+                .FirstOrDefaultAsync(u => u.Id == user_id);
 
-            var isUserAuthorized = await _context.userHasProjects
-                .AnyAsync(rel=>rel.project_id==boardFromRepo.project_id &&
-                    rel.user_id==user.Id);
-
-            if (!isUserAuthorized) {
-                return Unauthorized();
+            if (targetUser == null)
+            {
+                return NotFound();
             }
-
-            var relsInBoardProject = await _context.teamHasUsers
-                .Include(rel => rel.team)
-                .Include(rel=>rel.user)
-                .Where(rel => rel.team.project_id == boardFromRepo.project_id &&
-                    rel.team.Id==team_id)
-                .ToListAsync();
-
-            if (relsInBoardProject == null)
+            var userHasBoard = targetUser.notifications.Any(n => n.board_id == board_id)
+                ||
+                await _context.boardHasUsers.AnyAsync(rel => rel.board_id == board_id && rel.user_id == user.Id)
+                ||
+                await _context.boardHasAdmins.AnyAsync(rel => rel.board_id == board_id && rel.user_id == user.Id);
+            if (userHasBoard)
             {
                 return BadRequest();
             }
-
-            await _context.boardHasTeams.AddAsync(
-                    new BoardHasTeams {
-                        board_id=board_id,
-                        team_id=team_id
-                    }
-                );
-
-            var usersFromTeams = relsInBoardProject
-                    .Select(rel => rel.user).ToList();
-
-            usersFromTeams.ForEach(async user =>
+            targetUser.notifications.Add(new Notification
             {
-                await _context.boardHasUsers.AddAsync(
-                        new BoardHasUsers {
-                             user_id=user.Id,
-                             board_id=board_id
-                        }
-                    );
+                owner_user_id = user_id,
+                action_type = NotificationConstants.ACTION_TYPE_ASSIGN,
+                target_type = NotificationConstants.TARGET_BOARD,
+                sender_user_id = user.Id,
+                board_id = board_id
             });
-
             await _context.SaveChangesAsync();
-
-            return Ok();
-        }
-
-        [HttpPost("addsection")]
-        public async Task<ActionResult<CreateSectionDto>> AddSection(CreateSectionDto sectionDto) {
-            var user = await GetIdentityUser();
-
-            var boardFromRepo = await _context.boards.FindAsync(sectionDto.board_id);
-
-            if (boardFromRepo == null) {
-                return NotFound();
-            }
-
-            var isUserAuthorized = await _context.userHasProjects
-                .AnyAsync(rel => rel.project_id == boardFromRepo.project_id &&
-                    rel.user_id == user.Id);
-
-            if (!isUserAuthorized)
-            {
-                return Unauthorized();
-            }
-
-            var section = _mapper.Map<Section>(sectionDto);
-
-            await _context.sections.AddAsync(section);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtRoute("addsection",sectionDto);
-        }
-
-        [HttpDelete("removesection/{id}")]
-        public async Task<ActionResult> DeleteSection(int id) {
-            var user = await GetIdentityUser();
-
-            var sectionFromRepo = await _context.sections.Include(section=>section.board).FirstAsync(section=>section.Id==id);
-            
-            if (sectionFromRepo == null)
-            {
-                return NotFound();
-            }
-
-            var isUserAuthorized = await _context.userHasProjects
-                .AnyAsync(rel => rel.project_id == sectionFromRepo.board.project_id &&
-                    rel.user_id == user.Id);
-
-            if (!isUserAuthorized)
-            {
-                return Unauthorized();
-            }
-
-            _context.sections.Remove(sectionFromRepo);
-            await _context.SaveChangesAsync();
-
             return Ok();
         }
 
@@ -356,6 +354,5 @@ namespace ProjectManagementSystem.Controllers.BoardController
             var user = await _userManager.FindByIdAsync(userId);
             return user;
         }
-
     }
 }

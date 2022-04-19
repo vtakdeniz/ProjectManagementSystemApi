@@ -8,6 +8,8 @@ using ProjectManagementSystem.Dto.ProjectDto;
 using ProjectManagementSystem.Models.ProjectElements;
 using ProjectManagementSystem.Models.RelationTables;
 using ProjectManagementSystem.Dto.ReadBoardDto;
+using ProjectManagementSystem.Models.JobElements;
+using ProjectManagementSystem.Dto.JobDto;
 
 namespace ProjectManagementSystem.MappingProfile
 {
@@ -34,6 +36,20 @@ namespace ProjectManagementSystem.MappingProfile
             CreateMap<CreateTeamDto, Team>();
 
             CreateMap<CreateSectionDto, Section>();
+
+            CreateMap<Job, ReadJobDto>()
+                 .ForMember(dest => dest.jobHasUsers,
+                    src => src.MapFrom(src => src.jobHasUsers.Select(s => s.user)));
+            CreateMap<CreateJobDto, Job>()
+                .ForMember(dto => dto.isFinished, opt => opt.Ignore())
+                .ForMember(dto => dto.Id, opt => opt.Ignore())
+                .ForMember(dto => dto.jobHasUsers, opt => opt.Ignore())
+                .ForMember(dto => dto.createUserId, opt => opt.Ignore())
+                .ForMember(dto => dto.tags, opt => opt.Ignore());
+
+            CreateMap<CreateTagDto, Tags>();
+            
+            CreateMap<CreateChecklistDto, CheckList>();
 
         }
     }

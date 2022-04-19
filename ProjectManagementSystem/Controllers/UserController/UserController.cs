@@ -37,7 +37,6 @@ namespace ProjectManagementSystem.Controllers.UserController
         }
         
         [HttpGet]
-        [Route("self")]
         public async Task<ActionResult<ReadUserDto>> GetUserSelfInfo(string id)
         {
             /*var name = User.Claims.Where(x => x.Type == ClaimTypes.Name).FirstOrDefault()?.Value;
@@ -55,11 +54,9 @@ namespace ProjectManagementSystem.Controllers.UserController
             {
                 return NotFound();
             }
-
             return Ok(_mapper.Map<ReadUserDto>(user));
         }
 
-        [Route("self")]
         [HttpDelete]
         public async Task<IActionResult> DeleteUser()
         {
@@ -96,25 +93,19 @@ namespace ProjectManagementSystem.Controllers.UserController
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await _context.Users.Include(u => u.notifications).FirstOrDefaultAsync(u => u.Id == userId);
-
             if (userId == null || user == null)
             {
                 return NotFound();
             }
-
             var notification = user.notifications.FirstOrDefault(n => n.Id == id);
-
             if (notification == null) {
                 return NotFound();
             }
-
             var project = await _context.projects.FindAsync(notification.project_id);
-
             if (project == null)
             {
                 return NotFound();
             }
-
             if (notification.action_type == NotificationConstants.ACTION_TYPE_ASSIGN
                     &&notification.target_type==NotificationConstants.TARGET_PROJECT)
             {
@@ -128,7 +119,6 @@ namespace ProjectManagementSystem.Controllers.UserController
                 user.notifications.Remove(notification);
                 await _context.SaveChangesAsync();
             }
-
             return Ok();
         }
 
@@ -138,26 +128,18 @@ namespace ProjectManagementSystem.Controllers.UserController
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await _context.Users.Include(u => u.notifications).FirstOrDefaultAsync(u => u.Id == userId);
-
             if (userId == null || user == null)
             {
                 return NotFound();
             }
-
             var notification = user.notifications.FirstOrDefault(n => n.Id == id);
-
             if (notification == null)
             {
                 return NotFound();
             }
-
             user.notifications.Remove(notification);
-
             await _context.SaveChangesAsync();
-
             return Ok();
         }
-
-
     }
 }

@@ -30,6 +30,10 @@ namespace ProjectManagementSystem.Models.UserElements
         public int project_id { get; set; }
 
         [JsonIgnore]
+        public Board board { get; set; }
+        public int board_id { get; set; }
+
+        [JsonIgnore]
         public Job job { get; set; }
         public int job_id { get; set; }
 
