@@ -101,14 +101,15 @@ namespace ProjectManagementSystem.Controllers.UserController
             if (notification == null) {
                 return NotFound();
             }
-            var project = await _context.projects.FindAsync(notification.project_id);
-            if (project == null)
-            {
-                return NotFound();
-            }
+
             if (notification.action_type == NotificationConstants.ACTION_TYPE_ASSIGN
                     &&notification.target_type==NotificationConstants.TARGET_PROJECT)
             {
+                var project = await _context.projects.FindAsync(notification.project_id);
+                if (project == null)
+                {
+                    return NotFound();
+                }
                 var assignedRel = new UserAssignedProjects
                 {
                     receiver_id=userId,
@@ -116,6 +117,19 @@ namespace ProjectManagementSystem.Controllers.UserController
                     assigner_id=notification.sender_user_id
                 };
                 await _context.userAssignedProjects.AddAsync(assignedRel);
+                user.notifications.Remove(notification);
+                await _context.SaveChangesAsync();
+            }
+
+            else if (notification.action_type == NotificationConstants.ACTION_TYPE_ASSIGN_ADMIN
+                    && notification.target_type == NotificationConstants.TARGET_BOARD)
+            {
+                var boardHasAdmins = new BoardHasAdmins
+                {
+                    board_id=notification.board_id,
+                    user_id=userId
+                };
+                await _context.boardHasAdmins.AddAsync(boardHasAdmins);
                 user.notifications.Remove(notification);
                 await _context.SaveChangesAsync();
             }

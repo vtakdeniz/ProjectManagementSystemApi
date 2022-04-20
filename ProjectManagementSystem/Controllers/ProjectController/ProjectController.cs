@@ -15,6 +15,7 @@ using ProjectManagementSystem.Models.UserElements;
 using Microsoft.AspNetCore.Authorization;
 using ProjectManagementSystem.Models.RelationTables;
 using ProjectManagementSystem.Dto.UserDto;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace ProjectManagementSystem.Controllers.ProjectController
 {
@@ -258,6 +259,24 @@ namespace ProjectManagementSystem.Controllers.ProjectController
                 .ToListAsync();
 
             return Ok(_mapper.Map<List<ReadTeamDto>>(teams));
+        }
+
+        [HttpPatch("{id}")]
+        public async Task<ActionResult> PartialProjectUpdate(int id, JsonPatchDocument<UpdateProjectDto> patchDocument)
+        {
+            var projectFromRepo = await _context.projects.FindAsync(id);
+            if (projectFromRepo == null) {
+                return NotFound();
+            }
+            var projectToPatch = _mapper.Map<UpdateProjectDto>(projectFromRepo);
+            patchDocument.ApplyTo(projectToPatch, ModelState);
+            if (!TryValidateModel(projectToPatch))
+            {
+                return ValidationProblem(ModelState);
+            }
+            _mapper.Map(projectToPatch, projectFromRepo);
+            await _context.SaveChangesAsync();
+            return NoContent();
         }
 
         [ApiExplorerSettings(IgnoreApi = true)]
