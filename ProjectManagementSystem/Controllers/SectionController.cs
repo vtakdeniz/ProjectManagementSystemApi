@@ -15,7 +15,6 @@ using ProjectManagementSystem.Models.JobElements;
 using ProjectManagementSystem.Models.ProjectElements;
 using ProjectManagementSystem.Models.RelationTables;
 using ProjectManagementSystem.Models.UserElements;
-//using Swashbuckle.AspNetCore.Annotations;
 
 namespace ProjectManagementSystem.Controllers
 {
@@ -35,9 +34,6 @@ namespace ProjectManagementSystem.Controllers
             _mapper = mapper;
         }
 
-
-
-        //[SwaggerOperation(Summary = "Remove a section from the board")]
         [HttpDelete("removesection/{id}")]
         public async Task<ActionResult> DeleteSection(int id)
         {
@@ -69,8 +65,6 @@ namespace ProjectManagementSystem.Controllers
             return Ok();
         }
 
-
-        //[SwaggerOperation(Summary = "Add a section to the board")]
         [HttpPost("addsection")]
         public async Task<ActionResult<CreateSectionDto>> AddSection(CreateSectionDto sectionDto)
         {
