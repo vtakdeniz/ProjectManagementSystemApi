@@ -16,7 +16,7 @@ using ProjectManagementSystem.Models.ProjectElements;
 using ProjectManagementSystem.Models.RelationTables;
 using ProjectManagementSystem.Models.UserElements;
 using Microsoft.AspNetCore.Authorization;
-using Swashbuckle.AspNetCore.Annotations;
+// Swashbuckle.AspNetCore.Annotations;
 
 namespace ProjectManagementSystem.Controllers.TeamController
 {   
@@ -65,7 +65,7 @@ namespace ProjectManagementSystem.Controllers.TeamController
             return Ok(_mapper.Map<ReadTeamDto>(team));
         }
 
-        [SwaggerOperation(Summary = "Create a team for a project")]
+        //[SwaggerOperation(Summary = "Create a team for a project")]
         [HttpPost]
         public async Task<ActionResult<ReadTeamDto>> CreateTeam(CreateTeamDto teamDto) {
 
@@ -128,7 +128,7 @@ namespace ProjectManagementSystem.Controllers.TeamController
             return CreatedAtAction("GetTeam", new { id = team.Id }, _mapper.Map<ReadTeamDto>(team));
         }
 
-        [SwaggerOperation(Summary = "Remove a team from the board")]
+        //[SwaggerOperation(Summary = "Remove a team from the board")]
         [HttpDelete("delete")]
         public async Task<ActionResult> RemoveTeamFromBoard([FromQuery] int team_id, [FromQuery] int board_id)
         {
@@ -163,7 +163,7 @@ namespace ProjectManagementSystem.Controllers.TeamController
 
 
 
-        [SwaggerOperation(Summary = "Add a team that is in the same project with the board, to the board")]
+        //[SwaggerOperation(Summary = "Add a team that is in the same project with the board, to the board")]
         [HttpPost("add")]
         public async Task<ActionResult> AddTeamToBoard([FromQuery] int team_id, [FromQuery] int board_id)
         {

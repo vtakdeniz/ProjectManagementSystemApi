@@ -15,7 +15,7 @@ using ProjectManagementSystem.Models.JobElements;
 using ProjectManagementSystem.Models.ProjectElements;
 using ProjectManagementSystem.Models.RelationTables;
 using ProjectManagementSystem.Models.UserElements;
-using Swashbuckle.AspNetCore.Annotations;
+//using Swashbuckle.AspNetCore.Annotations;
 
 namespace ProjectManagementSystem.Controllers
 {
@@ -37,7 +37,7 @@ namespace ProjectManagementSystem.Controllers
 
 
 
-        [SwaggerOperation(Summary = "Remove a section from the board")]
+        //[SwaggerOperation(Summary = "Remove a section from the board")]
         [HttpDelete("removesection/{id}")]
         public async Task<ActionResult> DeleteSection(int id)
         {
@@ -70,7 +70,7 @@ namespace ProjectManagementSystem.Controllers
         }
 
 
-        [SwaggerOperation(Summary = "Add a section to the board")]
+        //[SwaggerOperation(Summary = "Add a section to the board")]
         [HttpPost("addsection")]
         public async Task<ActionResult<CreateSectionDto>> AddSection(CreateSectionDto sectionDto)
         {

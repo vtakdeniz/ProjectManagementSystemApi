@@ -16,7 +16,7 @@ using ProjectManagementSystem.Models.JobElements;
 using ProjectManagementSystem.Models.ProjectElements;
 using ProjectManagementSystem.Models.RelationTables;
 using ProjectManagementSystem.Models.UserElements;
-using Swashbuckle.AspNetCore.Annotations;
+//using Swashbuckle.AspNetCore.Annotations;
 
 namespace ProjectManagementSystem.Controllers.BoardController
 {
@@ -77,7 +77,6 @@ namespace ProjectManagementSystem.Controllers.BoardController
             var user = await GetIdentityUser();
 
             var userBoards = await _context.boardHasUsers
-
                 .Include(rel => rel.board)
                 .ThenInclude(board => board.boardHasAdmins)
                 .ThenInclude(rel => rel.user)
@@ -95,7 +94,6 @@ namespace ProjectManagementSystem.Controllers.BoardController
                 .ToListAsync();
 
             var adminBoards = await _context.boardHasAdmins
-
                 .Include(rel => rel.board)
                 .ThenInclude(board => board.boardHasAdmins)
                 .ThenInclude(rel => rel.user)
@@ -122,7 +120,7 @@ namespace ProjectManagementSystem.Controllers.BoardController
         }
 
 
-        [SwaggerOperation(Summary = "Create a board that isn't part of any project")]
+        //[SwaggerOperation(Summary = "Create a board that isn't part of any project")]
         [HttpPost("standalone")]
         public async Task<ActionResult<ReadBoardDto>> CreateStandaloneBoard([FromBody] CreateBoardDto boardDto)
         {
@@ -152,7 +150,7 @@ namespace ProjectManagementSystem.Controllers.BoardController
             return CreatedAtAction("GetBoard", new { id = board.Id }, _mapper.Map<ReadBoardDto>(board));
         }
 
-        [SwaggerOperation(Summary = "Create a board for a project, give user and team id's that are in project to add them to the board automatically")]
+        //[SwaggerOperation(Summary = "Create a board for a project, give user and team id's that are in project to add them to the board automatically")]
         [HttpPost]
         public async Task<ActionResult<ReadBoardDto>> CreateProjectBoard([FromBody]CreateBoardDto boardDto) {
             var user = await GetIdentityUser();
@@ -287,7 +285,7 @@ namespace ProjectManagementSystem.Controllers.BoardController
             return Ok(_mapper.Map<ReadBoardDto>(board));
         }
 
-        [SwaggerOperation(Summary = "Assign an admin to board from board")]
+        //[SwaggerOperation(Summary = "Assign an admin to board from board")]
         [HttpPost("assignadmin")]
         public async Task<ActionResult> AssignAdmin([FromQuery]int board_id,string user_id)
         {
@@ -365,7 +363,7 @@ namespace ProjectManagementSystem.Controllers.BoardController
             return NoContent();
         }
         
-        [SwaggerOperation(Summary = "Add a person from the project, to the board")]
+        //[SwaggerOperation(Summary = "Add a person from the project, to the board")]
         [HttpPost("adduser")]
         public async Task<ActionResult> AddUserToBoardFromProject([FromQuery]string user_id, [FromQuery]int board_id) {
 
@@ -421,7 +419,7 @@ namespace ProjectManagementSystem.Controllers.BoardController
             return Ok();
         }
 
-        [SwaggerOperation(Summary = "Remove a user from the board")]
+        //[SwaggerOperation(Summary = "Remove a user from the board")]
         [HttpPost("removeuser")]
         public async Task<ActionResult> RemoveUserFromBoard([FromQuery] string user_id, [FromQuery] int board_id)
         {
@@ -458,7 +456,7 @@ namespace ProjectManagementSystem.Controllers.BoardController
             return Ok();
         }
 
-        [SwaggerOperation(Summary = "Assign a board to a user")]
+        //[SwaggerOperation(Summary = "Assign a board to a user")]
         [HttpPost("assignproject")]
         public async Task<ActionResult> AssignBoard([FromQuery] int board_id, [FromQuery] string user_id)
         {
