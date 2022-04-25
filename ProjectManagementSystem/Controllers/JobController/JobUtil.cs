@@ -37,7 +37,7 @@ namespace ProjectManagementSystem.Controllers
         [HttpPost("{id}/tag")]
         public async Task<ActionResult> AddTag(int id, [FromBody] CreateTagDto tagDto)
         {
-            var user = await GetIdentityUser();
+          /*  var user = await GetIdentityUser();
             if (user == null)
             {
                 return NotFound(new { error = "User doesn't exists" });
@@ -62,30 +62,30 @@ namespace ProjectManagementSystem.Controllers
             };
             await _context.activityHistories.AddAsync(activity);
             await _context.tags.AddAsync(tag);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();*/
             return Ok();
         }
 
         [HttpPost("{id}/checklist")]
         public async Task<ActionResult> AddChecklist(int id, [FromBody] CreateChecklistDto checklistDto)
         {
-            var user = await GetIdentityUser();
+           /* var user = await GetIdentityUser();
             if (user == null)
             {
                 return NotFound(new { error = "User doesn't exists" });
             }
             var jobFromRepo = await _context.jobs
-                .Include(job => job.section)
+                .Include(job => job.sections)
                 .Where(rel => rel.Id == id).FirstAsync();
             if (jobFromRepo == null)
             {
                 return NotFound();
             }
             var isUserAuthorized = await _context.boardHasAdmins
-               .AnyAsync(rel => rel.board_id == jobFromRepo.section.board_id && rel.user_id == user.Id)
+               .AnyAsync(rel => rel.board_id == jobFromRepo.sections.board_id && rel.user_id == user.Id)
                 ||
                 await _context.boardHasUsers
-               .AnyAsync(rel => rel.board_id == jobFromRepo.section.board_id && rel.user_id == user.Id)
+               .AnyAsync(rel => rel.board_id == jobFromRepo.sections.board_id && rel.user_id == user.Id)
                ;
 
             if (!isUserAuthorized)
@@ -103,14 +103,14 @@ namespace ProjectManagementSystem.Controllers
             };
             await _context.activityHistories.AddAsync(activity);
             await _context.checkLists.AddAsync(checklist);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();*/
             return Ok();
         }
 
         [HttpPost("{id}/attach")]
         public async Task<ActionResult> AddAttachment(IFormFile file, int id)
         {
-            if (file == null || file.Length < 0)
+         /*   if (file == null || file.Length < 0)
             {
                 return BadRequest();
             }
@@ -158,7 +158,7 @@ namespace ProjectManagementSystem.Controllers
                 attachment.fileData = target.ToArray();
             }
             await _context.attachments.AddAsync(attachment);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();*/
             return Ok();
         }
 
