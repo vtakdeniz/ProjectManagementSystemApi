@@ -131,13 +131,16 @@ namespace ProjectManagementSystem.Controllers
             {
                 return NotFound();
             }
+
             var isUserAuthorized = await _context.boardHasAdmins
                 .AnyAsync(rel => rel.board_id == jobFromRepo.section.board_id && rel.user_id == user.Id)
                 ||
                 await _context.boardHasUsers
                 .AnyAsync(rel => rel.board_id == jobFromRepo.section.board_id && rel.user_id == user.Id);
+
             if (!isUserAuthorized)
                 return Unauthorized();
+
             var fileName = Path.GetFileName(file.FileName);
             var fileExtension = Path.GetExtension(fileName);
             var fullFileName = String.Concat(Convert.ToString(Guid.NewGuid()), fileExtension);

@@ -41,7 +41,11 @@ namespace ProjectManagementSystem.Controllers.JobController
             var job = await _context.jobs
                 .FindAsync(id);
 
-            if (job.receiverUserId == user.Id) {
+            if (job == null) {
+                return NotFound();
+            }
+
+            if (job.receiverUserId==user.Id) {
                 return Ok(_mapper.Map<ReadJobDto>(job));
             }
 
@@ -61,6 +65,7 @@ namespace ProjectManagementSystem.Controllers.JobController
             return Ok(_mapper.Map<ReadJobDto>(job));
         }
 
+        // TODO : Get jobs based on board id
         [HttpGet("board")]
         public async Task<ActionResult<IEnumerable<ReadJobDto>>> GetBoardJobs()
         {
@@ -140,8 +145,8 @@ namespace ProjectManagementSystem.Controllers.JobController
                 await _context.SaveChangesAsync();
                 await _context.taskHasUsers.AddAsync(
                         new JobHasUsers() {
-                            user_id=user.Id,
-                            job_id=job.Id
+                            user_id = user.Id,
+                            job_id = job.Id
                         }
                     );
                 if (createJobDto.tags != null)
@@ -159,6 +164,11 @@ namespace ProjectManagementSystem.Controllers.JobController
                 await _context.SaveChangesAsync();
                 return CreatedAtAction("GetJob", new { id = job.Id }, _mapper.Map<ReadJobDto>(job));
             }
+
+            else if (job.receiverUserId == user.Id && !(job.section_id == 0 || job.project_id == 0)) {
+                return BadRequest();
+            }
+            
             var isUserAuthorized = await _context.userHasProjects
                 .AnyAsync(rel => rel.project_id == job.project_id && rel.user_id == user.Id)
                 ||
@@ -167,8 +177,10 @@ namespace ProjectManagementSystem.Controllers.JobController
                 ||
                 await _context.boardHasAdmins
                     .AnyAsync(rel => rel.board_id == section.board_id && rel.user_id == user.Id);
+
             if (!isUserAuthorized)
                 return Unauthorized();
+
             if (job.section_id == 0 && job.receiverUserId != null) {
                 var receiverAssignedProject = await _context.userAssignedProjects
                     .AnyAsync(rel => rel.receiver_id == job.receiverUserId);
@@ -183,6 +195,10 @@ namespace ProjectManagementSystem.Controllers.JobController
             else if (job.section_id == 0 && job.receiverUserId == null) {
                 return BadRequest();
             }
+
+            await _context.jobs.AddAsync(job);
+            await _context.SaveChangesAsync();
+
             if (createJobDto.tags!=null) {
                 foreach (string element in createJobDto.tags) {
                     var tag = new Tags()
@@ -193,8 +209,7 @@ namespace ProjectManagementSystem.Controllers.JobController
                     await _context.tags.AddAsync(tag);
                 }
             }
-            await _context.jobs.AddAsync(job);
-            await _context.SaveChangesAsync();
+
             return CreatedAtAction("GetJob", new { id = job.Id }, _mapper.Map<ReadJobDto>(job));
         }
 
