@@ -1,9 +1,7 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
-
 namespace ProjectManagementSystem.Dto.ProjectDto
 {
-    public class CreateSectionDto
+    public class ReadSectionDto
     {
         public string sectionName { get; set; }
         public int board_id { get; set; }
