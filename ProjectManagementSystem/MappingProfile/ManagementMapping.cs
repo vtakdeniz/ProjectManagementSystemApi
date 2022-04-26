@@ -53,7 +53,6 @@ namespace ProjectManagementSystem.MappingProfile
             CreateMap<CreateTeamDto, Team>();
 
             CreateMap<CreateSectionDto, Section>();
-            CreateMap<Section,ReadSectionDto>();
 
             CreateMap<Job, ReadJobDto>()
                  .ForMember(dest => dest.jobHasUsers,

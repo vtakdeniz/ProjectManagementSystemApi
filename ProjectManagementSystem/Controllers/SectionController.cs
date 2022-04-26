@@ -34,35 +34,7 @@ namespace ProjectManagementSystem.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("{id}", Name = "GetSection")]
-        public async Task<ActionResult> GetSection(int id) {
-            var user = await GetIdentityUser();
-
-            var sectionFromRepo = await _context.sections.Include(section => section.board).FirstAsync(section => section.Id == id);
-
-            if (sectionFromRepo == null)
-            {
-                return NotFound();
-            }
-
-            var isUserAuthorized = await _context.boardHasUsers
-                  .AnyAsync(rel => rel.board_id == sectionFromRepo.board.Id &&
-                      rel.user_id == user.Id)
-                  ||
-                  await _context.boardHasAdmins
-                  .AnyAsync(rel => rel.board_id == sectionFromRepo.board.Id && rel.user_id == user.Id);
-
-            if (!isUserAuthorized)
-            {
-                return Unauthorized();
-            }
-
-            var sectionToSend = _mapper.Map<ReadSectionDto>(sectionFromRepo);
-
-            return Ok(sectionToSend);
-        }
-
-        [HttpDelete("{id}")]
+        [HttpDelete("removesection/{id}")]
         public async Task<ActionResult> DeleteSection(int id)
         {
             var user = await GetIdentityUser();
@@ -93,7 +65,7 @@ namespace ProjectManagementSystem.Controllers
             return Ok();
         }
 
-        [HttpPost]
+        [HttpPost("addsection")]
         public async Task<ActionResult<CreateSectionDto>> AddSection(CreateSectionDto sectionDto)
         {
             var user = await GetIdentityUser();
@@ -110,7 +82,8 @@ namespace ProjectManagementSystem.Controllers
                     rel.user_id == user.Id)
                 ||
                 await _context.boardHasAdmins
-                .AnyAsync(rel => rel.board_id == boardFromRepo.Id && rel.user_id == user.Id);
+                .AnyAsync(rel => rel.board_id == boardFromRepo.Id && rel.user_id == user.Id)
+                ;
 
             if (!isUserAuthorized)
             {
@@ -122,7 +95,7 @@ namespace ProjectManagementSystem.Controllers
             await _context.sections.AddAsync(section);
             await _context.SaveChangesAsync();
 
-            return CreatedAtRoute("GetSection", new { id = section.Id }, section);
+            return CreatedAtRoute("addsection", sectionDto);
         }
 
         [ApiExplorerSettings(IgnoreApi = true)]
