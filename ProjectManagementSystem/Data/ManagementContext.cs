@@ -34,6 +34,7 @@ namespace ProjectManagementSystem.Data
                 .WithMany(p => p.sections)
                 .HasForeignKey(s=>s.board_id).OnDelete(DeleteBehavior.Cascade);
 
+            // TODO:check
             modelBuilder.Entity<Job>()
              .HasMany(j=>j.sections)
              .WithOne(s=>s.job)

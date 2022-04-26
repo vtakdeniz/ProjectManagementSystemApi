@@ -13,6 +13,7 @@ namespace ProjectManagementSystem.Models.JobElements
         public int Id { get; set; }
 
         public int section_id { get; set; }
+        // TODO : check
         public List<Section> sections { get; set; }
 
         [Required]

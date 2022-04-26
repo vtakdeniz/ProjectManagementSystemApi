@@ -84,7 +84,7 @@ namespace ProjectManagementSystem.Controllers.JobController
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteJob(int id) {
-            /*var user = await GetIdentityUser();
+            var user = await GetIdentityUser();
             if (user == null)
             {
                 return NotFound(new { error = "User doesn't exists" });
@@ -109,7 +109,7 @@ namespace ProjectManagementSystem.Controllers.JobController
                 return Unauthorized();
             }
             _context.jobs.Remove(job);
-            await _context.SaveChangesAsync();*/
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 
@@ -224,7 +224,7 @@ namespace ProjectManagementSystem.Controllers.JobController
             }
 
             var jobFromRepo = await _context.jobs
-                .Include(job=>job.sections)
+                .Include(job=>job.section)
                 .ThenInclude(section=>section.board)
                 .Where(rel=>rel.Id==id).FirstAsync();
 
@@ -240,13 +240,12 @@ namespace ProjectManagementSystem.Controllers.JobController
                 return BadRequest();
             }
 
-            //TODO : Fix
-            var isUserAuthorized = true;/* await _context.boardHasAdmins
+            var isUserAuthorized = await _context.boardHasAdmins
                  .AnyAsync(rel => rel.board_id == jobFromRepo.section.board_id && rel.user_id == user.Id)
                   ||
                   await _context.boardHasUsers
                  .AnyAsync(rel => rel.board_id == jobFromRepo.section.board_id && rel.user_id == user.Id)
-                 ;*/
+                 ;
 
             if (!isUserAuthorized) {
                 return Unauthorized();
