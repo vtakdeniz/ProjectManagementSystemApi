@@ -23,7 +23,7 @@ using Microsoft.OpenApi.Models;
 
 namespace ProjectManagementSystem
 {
-    public class Startup
+    public class Startup 
     {
         public Startup(IConfiguration configuration)
         {
@@ -40,7 +40,7 @@ namespace ProjectManagementSystem
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Version = "v1",
+                    Version = "v2.0.1",
                     Title = "Project Management System Api",
                     Description = "Project Management System Api",
                     //TermsOfService = new Uri(""),
