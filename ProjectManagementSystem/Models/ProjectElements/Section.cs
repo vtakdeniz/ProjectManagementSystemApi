@@ -18,7 +18,6 @@ namespace ProjectManagementSystem.Models.ProjectElements
         public Board board { get; set; }
 
         [JsonIgnore]
-        public int job_id { get; set; }
-        public Job job { get; set; }
+        public List<Job> jobs { get; set; }
     }
 }

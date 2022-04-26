@@ -90,6 +90,9 @@ namespace ProjectManagementSystem.Controllers.BoardController
                 .ThenInclude(board => board.boardHasUsers)
                 .ThenInclude(rel => rel.user)
 
+                .Include(rel => rel.board)
+                .ThenInclude(rel=>rel.sections)
+
                 .Where(rel => rel.user_id == user.Id)
                 .Select(rel=>rel.board)
                 .ToListAsync();
@@ -106,6 +109,9 @@ namespace ProjectManagementSystem.Controllers.BoardController
                 .Include(rel => rel.board)
                 .ThenInclude(board => board.boardHasUsers)
                 .ThenInclude(rel => rel.user)
+
+                .Include(rel => rel.board)
+                .ThenInclude(rel => rel.sections)
 
                 .Where(rel => rel.user_id == user.Id)
                 .Select(rel => rel.board).ToListAsync();
