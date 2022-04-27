@@ -204,6 +204,7 @@ namespace ProjectManagementSystem.Controllers.JobController
             }
 
             job.section = section;
+            job.section_id = section.Id;
             await _context.jobs.AddAsync(job);
             await _context.SaveChangesAsync();
 
