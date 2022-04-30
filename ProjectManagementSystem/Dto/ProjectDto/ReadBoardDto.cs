@@ -8,7 +8,7 @@ using ProjectManagementSystem.Models.ProjectElements;
 using ProjectManagementSystem.Models.RelationTables;
 using ProjectManagementSystem.Models.UserElements;
 
-namespace ProjectManagementSystem.Dto.ReadBoardDto
+namespace ProjectManagementSystem.Dto.BoardReadDto
 {
     public class ReadBoardDto
     {

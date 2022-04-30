@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using ProjectManagementSystem.Models.RelationTables;
 using ProjectManagementSystem.Dto.UserDto;
 using Microsoft.AspNetCore.JsonPatch;
+using ProjectManagementSystem.Dto.BoardReadDto;
 
 namespace ProjectManagementSystem.Controllers.ProjectController
 {
@@ -47,6 +48,7 @@ namespace ProjectManagementSystem.Controllers.ProjectController
             }
             var userHasProjects = await _context.userHasProjects
                 .Include(rel=>rel.project)
+                .ThenInclude(p=>p.boards)
                 .FirstOrDefaultAsync(relation=>relation.project_id==id&&relation.user_id==user.Id);
 
             if (userHasProjects==null) {
@@ -64,6 +66,7 @@ namespace ProjectManagementSystem.Controllers.ProjectController
                 return NotFound(new { error = "User doesn't exists in the current context" });
             }
             var userHasProjects = await _context.userHasProjects.Include(r=>r.project)
+                .ThenInclude(p=>p.boards)
                 .Where(relation => relation.user_id == user.Id)
                     .Select(r=>r.project).ToListAsync();
             
@@ -230,12 +233,15 @@ namespace ProjectManagementSystem.Controllers.ProjectController
                 return NotFound();
             }
             var relProjectToUser = await _context.userHasProjects
-                .AnyAsync(rel => rel.project_id == id && rel.user_id == user.Id);
+                .AnyAsync(rel => rel.project_id == id && rel.user_id == user.Id)
+                ||
+                await _context.userAssignedProjects.AnyAsync(rel => rel.project_id == id && rel.receiver_id == user.Id);
+
             if (!relProjectToUser) {
                 return Unauthorized();
             }
             var boards = await _context.boards.Where(board => board.project_id == id).ToListAsync();
-            return Ok(boards);
+            return Ok(_mapper.Map<List<ReadBoardDto>>(boards));
         }
 
         [HttpGet("{id}/teams", Name = "GetTeamsOfProject")]

@@ -72,6 +72,10 @@ namespace ProjectManagementSystem.Data
                .HasMany(j => j.projectJobs)
                .WithOne(a => a.project);
 
+            modelBuilder.Entity<Project>()
+               .HasMany(p => p.boards)
+               .WithOne(b => b.project);
+
             ManyToManyRelationshipConfiguration(modelBuilder);
 
         }

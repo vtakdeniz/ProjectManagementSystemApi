@@ -7,7 +7,7 @@ using ProjectManagementSystem.Dto.UserDto;
 using ProjectManagementSystem.Dto.ProjectDto;
 using ProjectManagementSystem.Models.ProjectElements;
 using ProjectManagementSystem.Models.RelationTables;
-using ProjectManagementSystem.Dto.ReadBoardDto;
+using ProjectManagementSystem.Dto.BoardReadDto;
 using ProjectManagementSystem.Models.JobElements;
 using ProjectManagementSystem.Dto.JobDto;
 

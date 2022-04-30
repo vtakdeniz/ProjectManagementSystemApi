@@ -1,7 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using ProjectManagementSystem.Dto.UserDto;
+using ProjectManagementSystem.Dto.BoardReadDto;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace ProjectManagementSystem.Dto.ProjectDto
 {
@@ -18,5 +20,6 @@ namespace ProjectManagementSystem.Dto.ProjectDto
         public bool isFinished { get; set; }
         
         public ReadUserDto assigner_user { get; set; }
+        public List<ReadBoardDto> boards{ get; set; }
     }
 }
