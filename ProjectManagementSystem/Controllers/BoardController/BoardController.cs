@@ -177,10 +177,20 @@ namespace ProjectManagementSystem.Controllers.BoardController
 
             var board = _mapper.Map<Board>(boardDto);
             await _context.boards.AddAsync(board);
+            board.project = projectFromRepo;
 
             if (boardDto.team_ids == null && boardDto.user_ids == null)
             {
+
                 await _context.SaveChangesAsync();
+
+                await _context.boardHasUsers.AddAsync(
+                    new BoardHasUsers
+                {
+                    board_id = board.Id,
+                    user_id = user.Id
+                });
+
                 var boardHasAdminsRelation = new BoardHasAdmins
                 {
                     board_id = board.Id,
@@ -206,6 +216,7 @@ namespace ProjectManagementSystem.Controllers.BoardController
                 if (areAllDtoTeamsValid != null && !areAllDtoTeamsValid.Value)
                     return BadRequest();
             }
+
             await _context.SaveChangesAsync();
             var boardHasAdminsRel = new BoardHasAdmins
             {
@@ -213,6 +224,7 @@ namespace ProjectManagementSystem.Controllers.BoardController
                 user_id = user.Id
             };
             await _context.boardHasAdmins.AddAsync(boardHasAdminsRel);
+
             if (boardDto.team_ids!=null) {
                 var projectTeamRel = await _context.teams
                 .Where(team => team.project_id == boardDto.project_id
@@ -257,13 +269,13 @@ namespace ProjectManagementSystem.Controllers.BoardController
                         );
                 });
             }
-            board.project = projectFromRepo;
-            var boardUserRel = new BoardHasUsers
+           
+            await _context.boardHasUsers.AddAsync(
+                new BoardHasUsers
             {
                 board_id = board.Id,
                 user_id = user.Id
-            };
-            await _context.boardHasUsers.AddAsync(boardUserRel);
+            });
             await _context.SaveChangesAsync();
             return CreatedAtAction("GetBoard",new { id=board.Id }, _mapper.Map<ReadBoardDto>(board));
         }

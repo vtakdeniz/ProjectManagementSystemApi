@@ -86,8 +86,10 @@ namespace ProjectManagementSystem.Controllers.ProjectController
             {
                 return NotFound(new { error = "User doesn't exists in the current context" });
             }
+
             var userAssignedProjectsRel = await _context.userAssignedProjects
                 .Include(r => r.project)
+                .ThenInclude(p => p.boards)
                 .Include(r=>r.assignerUser)
                 .Where(relation => relation.receiver_id == user.Id).ToListAsync();
 

@@ -40,7 +40,7 @@ namespace ProjectManagementSystem
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Version = "v2.0.2",
+                    Version = "v2.0.3",
                     Title = "Project Management System Api",
                     Description = "Project Management System Api",
                     //TermsOfService = new Uri(""),
