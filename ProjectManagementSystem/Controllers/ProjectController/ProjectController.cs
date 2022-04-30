@@ -20,7 +20,7 @@ using ProjectManagementSystem.Dto.BoardReadDto;
 
 namespace ProjectManagementSystem.Controllers.ProjectController
 {
-    // TODO : Add admin to project
+    // TODO : Assign admin to project
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
@@ -240,7 +240,18 @@ namespace ProjectManagementSystem.Controllers.ProjectController
             if (!relProjectToUser) {
                 return Unauthorized();
             }
-            var boards = await _context.boards.Where(board => board.project_id == id).ToListAsync();
+            var boards = await _context.boards
+                .Include(b=>b.sections)
+                .Include(b=>b.boardHasAdmins)
+                .ThenInclude(b=>b.user)
+
+                .Include(b => b.boardHasTeams)
+                .ThenInclude(t=>t.team)
+
+                .Include(b => b.boardHasUsers)
+                .ThenInclude(b => b.user)
+
+                .Where(board => board.project_id == id).ToListAsync();
             return Ok(_mapper.Map<List<ReadBoardDto>>(boards));
         }
 

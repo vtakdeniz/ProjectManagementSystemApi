@@ -164,6 +164,11 @@ namespace ProjectManagementSystem.Controllers.BoardController
             }
 
             var project_id = boardDto.project_id;
+            var projectFromRepo = await _context.projects.FindAsync(project_id);
+            if (projectFromRepo == null) {
+                return NotFound();
+            }
+
             var isUserAuthorized = await _context.userHasProjects
                 .AnyAsync(rel => rel.project_id == project_id && rel.user_id == user.Id);
 
@@ -252,12 +257,13 @@ namespace ProjectManagementSystem.Controllers.BoardController
                         );
                 });
             }
-            var rel = new BoardHasUsers
+            board.project = projectFromRepo;
+            var boardUserRel = new BoardHasUsers
             {
-                user_id = user.Id,
-                board_id = board.Id
+                board_id = board.Id,
+                user_id = user.Id
             };
-            await _context.boardHasUsers.AddAsync(rel);
+            await _context.boardHasUsers.AddAsync(boardUserRel);
             await _context.SaveChangesAsync();
             return CreatedAtAction("GetBoard",new { id=board.Id }, _mapper.Map<ReadBoardDto>(board));
         }
