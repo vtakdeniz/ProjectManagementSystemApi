@@ -89,7 +89,6 @@ namespace ProjectManagementSystem
         {
             if (env.IsDevelopment())
             {
-
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
                 {

@@ -136,7 +136,9 @@ namespace ProjectManagementSystem.Controllers
                 .AnyAsync(rel => rel.board_id == jobFromRepo.section.board_id && rel.user_id == user.Id)
                 ||
                 await _context.boardHasUsers
-                .AnyAsync(rel => rel.board_id == jobFromRepo.section.board_id && rel.user_id == user.Id);
+                .AnyAsync(rel => rel.board_id == jobFromRepo.section.board_id && rel.user_id == user.Id)
+                ||
+                (jobFromRepo.receiverUserId==user.Id && jobFromRepo.section_id==0 && jobFromRepo.project_id==0);
 
             if (!isUserAuthorized)
                 return Unauthorized();

@@ -16,6 +16,7 @@ using ProjectManagementSystem.Models.JobElements;
 using ProjectManagementSystem.Models.ProjectElements;
 using ProjectManagementSystem.Models.RelationTables;
 using ProjectManagementSystem.Models.UserElements;
+using ProjectManagementSystem.Dto.JobDto;
 
 namespace ProjectManagementSystem.Controllers.BoardController
 {
@@ -527,6 +528,20 @@ namespace ProjectManagementSystem.Controllers.BoardController
         [HttpPatch("{id}")]
         public async Task<ActionResult> PartialBoardUpdate(int id, JsonPatchDocument<UpdateBoardDto> patchDocument)
         {
+            var user = await GetIdentityUser();
+            if (user == null)
+            {
+                return NotFound(new { error = "User doesn't exists in the current context" });
+            }
+
+            var isUserAuthorized = await _context.boardHasAdmins
+                .AnyAsync(rel => rel.user_id == user.Id && rel.board_id == id);
+
+            if (!isUserAuthorized)
+            {
+                return Unauthorized();
+            }
+
             var boardFromRepo = await _context.boards.FindAsync(id);
             if (boardFromRepo == null)
             {
@@ -541,6 +556,36 @@ namespace ProjectManagementSystem.Controllers.BoardController
             _mapper.Map(boardToPatch, boardFromRepo);
             await _context.SaveChangesAsync();
             return NoContent();
+        }
+
+        [HttpGet("{id}/jobs")]
+        public async Task<ActionResult> GetJobsOfBoard(int id){
+
+            var user = await GetIdentityUser();
+
+            if (user == null)
+            {
+                return NotFound(new { error = "User doesn't exists in the current context" });
+            }
+
+            var boardFromRepo = await _context.boards.FindAsync(id);
+
+            var isUserAuthorized = await _context.userAssignedProjects
+                .AnyAsync(rel=>rel.receiver_id==user.Id&&rel.project_id==id)
+                ||
+                await _context.userHasProjects
+                .AnyAsync(rel => rel.user_id == user.Id && rel.project_id == id);
+
+            if (!isUserAuthorized)
+            {
+                return Unauthorized();
+            }
+
+            var jobs = await _context.jobs.Include(job => job.section)
+                .Where(job => job.section.board_id == id)
+                .ToListAsync();
+
+            return Ok(_mapper.Map<List<ReadJobDto>>(jobs));
         }
 
         [ApiExplorerSettings(IgnoreApi = true)]

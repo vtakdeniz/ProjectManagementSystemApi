@@ -17,6 +17,7 @@ using ProjectManagementSystem.Models.RelationTables;
 using ProjectManagementSystem.Dto.UserDto;
 using Microsoft.AspNetCore.JsonPatch;
 using ProjectManagementSystem.Dto.BoardReadDto;
+using ProjectManagementSystem.Dto.JobDto;
 
 namespace ProjectManagementSystem.Controllers.ProjectController
 {
@@ -242,6 +243,7 @@ namespace ProjectManagementSystem.Controllers.ProjectController
             if (!relProjectToUser) {
                 return Unauthorized();
             }
+
             var boards = await _context.boards
                 .Include(b=>b.sections)
                 .Include(b=>b.boardHasAdmins)
@@ -266,8 +268,9 @@ namespace ProjectManagementSystem.Controllers.ProjectController
                 return NotFound(new { error = "User doesn't exists in the current context" });
             }
             var isUserAuthorized = await _context.userHasProjects
-                .AnyAsync(relation => relation.project_id == id
-                    && relation.user_id == user.Id);
+                .AnyAsync(rel => rel.project_id == id && rel.user_id == user.Id)
+                ||
+                await _context.userAssignedProjects.AnyAsync(rel => rel.project_id == id && rel.receiver_id == user.Id);
 
             if (!isUserAuthorized)
             {
@@ -279,6 +282,28 @@ namespace ProjectManagementSystem.Controllers.ProjectController
 
             return Ok(_mapper.Map<List<ReadTeamDto>>(teams));
         }
+
+        [HttpGet("{id}/jobs")]
+        public async Task<ActionResult<ReadJobDto>> GetJobsOfProject(int id) {
+            var user = await GetIdentityUser();
+            if (user == null)
+            {
+                return NotFound(new { error = "User doesn't exists in the current context" });
+            }
+            var isUserAuthorized = await _context.userHasProjects
+                .AnyAsync(rel => rel.project_id == id && rel.user_id == user.Id)
+                ||
+                await _context.userAssignedProjects
+                .AnyAsync(rel => rel.project_id == id && rel.receiver_id == user.Id);
+
+            if (!isUserAuthorized)
+            {
+                return Unauthorized();
+            }
+
+            var jobs = await _context.jobs.Where(job => job.project_id == id && job.section_id==0).ToListAsync();
+            return Ok(_mapper.Map<List<ReadJobDto>>(jobs));
+        } 
 
         [HttpPatch("{id}")]
         public async Task<ActionResult> PartialProjectUpdate(int id, JsonPatchDocument<UpdateProjectDto> patchDocument)

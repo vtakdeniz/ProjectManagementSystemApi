@@ -65,6 +65,18 @@ namespace ProjectManagementSystem.Controllers.JobController
             return Ok(_mapper.Map<ReadJobDto>(job));
         }
 
+        [HttpGet("standalone")]
+        public async Task<ActionResult<ReadJobDto>> GetStandAloneJobs()
+        {
+            var user = await GetIdentityUser();
+
+            var jobs = await _context.jobs
+                .Where(job => job.receiverUserId == user.Id && job.project_id == 0 && job.section_id == 0)
+                .ToListAsync();
+
+            return Ok(_mapper.Map<ReadJobDto>(jobs));
+        }
+
         // TODO : Get jobs based on board id
         [HttpGet("board")]
         public async Task<ActionResult<IEnumerable<ReadJobDto>>> GetBoardJobs()
