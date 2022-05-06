@@ -343,17 +343,20 @@ namespace ProjectManagementSystem.Controllers.BoardController
 
             var targetUserHasBoard = await _context.boardHasUsers.AnyAsync(rel => rel.board_id == board_id && rel.user_id == user_id);
 
-            if (targetUserAdminBoard || !targetUserHasBoard)
+            if (targetUserAdminBoard || targetUserHasBoard)
             {
                 return BadRequest();
             }
             targetUser.notifications.Add(new Notification
             {
                 owner_user_id = user_id,
+                owner_user=targetUser,
                 action_type = NotificationConstants.ACTION_TYPE_ASSIGN_ADMIN,
                 target_type = NotificationConstants.TARGET_BOARD,
                 sender_user_id = user.Id,
-                board_id = board_id
+                sender_user=user,
+                board_id = board_id,
+                board=boardFromRepo
             });
             await _context.SaveChangesAsync();
             return Ok();
@@ -476,7 +479,7 @@ namespace ProjectManagementSystem.Controllers.BoardController
             return Ok();
         }
 
-        [HttpPost("assignproject")]
+        [HttpPost("assignboard")]
         public async Task<ActionResult> AssignBoard([FromQuery] int board_id, [FromQuery] string user_id)
         {
             var user = await GetIdentityUser();
@@ -516,10 +519,13 @@ namespace ProjectManagementSystem.Controllers.BoardController
             targetUser.notifications.Add(new Notification
             {
                 owner_user_id = user_id,
+                owner_user=targetUser,
                 action_type = NotificationConstants.ACTION_TYPE_ASSIGN,
                 target_type = NotificationConstants.TARGET_BOARD,
                 sender_user_id = user.Id,
-                board_id = board_id
+                sender_user=user,
+                board_id = board_id,
+                board=boardFromRepo
             });
             await _context.SaveChangesAsync();
             return Ok();

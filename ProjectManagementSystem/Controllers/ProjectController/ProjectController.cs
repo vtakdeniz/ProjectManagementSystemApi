@@ -211,10 +211,13 @@ namespace ProjectManagementSystem.Controllers.ProjectController
             targetUser.notifications.Add(new Notification
             {
                 owner_user_id=user_id,
+                owner_user=targetUser,
                 action_type=NotificationConstants.ACTION_TYPE_ASSIGN,
                 target_type=NotificationConstants.TARGET_PROJECT,
                 sender_user_id=user.Id,
-                project_id=project_id
+                sender_user = user,
+                project_id =project_id,
+                project=project
             });
             await _context.SaveChangesAsync();
             return Ok();

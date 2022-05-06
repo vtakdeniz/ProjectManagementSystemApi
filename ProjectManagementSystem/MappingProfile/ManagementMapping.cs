@@ -69,6 +69,8 @@ namespace ProjectManagementSystem.MappingProfile
             
             CreateMap<CreateChecklistDto, CheckList>();
 
+            CreateMap<Notification, ReadNotificationDto>();
+
         }
     }
 }

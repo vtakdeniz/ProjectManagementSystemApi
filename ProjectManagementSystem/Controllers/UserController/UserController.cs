@@ -77,14 +77,27 @@ namespace ProjectManagementSystem.Controllers.UserController
         public async Task<IActionResult> GetNotifications()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _context.Users.Include(u => u.notifications).FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await _context.Users
+                .Include(u => u.notifications)
+                .ThenInclude(n=>n.sender_user)
+
+                .Include(u=>u.notifications)
+                .ThenInclude(n=>n.board)
+
+                .Include(u=>u.notifications)
+                .ThenInclude(n=>n.job)
+
+                .Include(u => u.notifications)
+                .ThenInclude(n => n.project)
+
+                .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (userId == null || user==null)
             {
                 return NotFound();
             }
 
-            return Ok(user.notifications);
+            return Ok(_mapper.Map<List<ReadNotificationDto>>(user.notifications));
         }
 
         [Route("notification/{id}/accept")]
