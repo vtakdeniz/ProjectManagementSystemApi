@@ -46,6 +46,9 @@ namespace ProjectManagementSystem.Controllers.BoardController
                 .ThenInclude(rel => rel.user)
 
                 .Include(rel=>rel.sections)
+                .ThenInclude(s=>s.jobs)
+                .ThenInclude(j=>j.jobHasUsers)
+                .ThenInclude(r=>r.user)
 
                 .Include(board=>board.boardHasTeams)
                 .ThenInclude(rel=>rel.team)

@@ -1,20 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjectManagementSystem.Data;
 using ProjectManagementSystem.Dto.ProjectDto;
-using ProjectManagementSystem.Dto.BoardReadDto;
-using ProjectManagementSystem.Models.JobElements;
 using ProjectManagementSystem.Models.ProjectElements;
-using ProjectManagementSystem.Models.RelationTables;
 using ProjectManagementSystem.Models.UserElements;
+using ProjectManagementSystem.Dto.JobDto;
 
 namespace ProjectManagementSystem.Controllers
 {

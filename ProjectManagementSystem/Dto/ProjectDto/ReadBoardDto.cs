@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using AutoMapper;
+using ProjectManagementSystem.Dto.JobDto;
 using ProjectManagementSystem.Dto.ProjectDto;
 using ProjectManagementSystem.Dto.UserDto;
 using ProjectManagementSystem.Models.ProjectElements;
@@ -26,7 +27,7 @@ namespace ProjectManagementSystem.Dto.BoardReadDto
         public DateTime endDate { get; set; } = DateTime.MaxValue;
         public bool isFinished { get; set; } = false;
 
-        public List<Section> sections { get; set; }
+        public List<ReadSectionDto> sections { get; set; }
         public List<ReadUserDto> boardHasAdmins { get; set; }
         public List<ReadTeamDto> boardHasTeams { get; set; }
         public List<ReadUserDto> boardHasUsers { get; set; }

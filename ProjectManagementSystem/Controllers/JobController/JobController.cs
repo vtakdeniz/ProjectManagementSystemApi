@@ -77,9 +77,8 @@ namespace ProjectManagementSystem.Controllers.JobController
             return Ok(_mapper.Map<ReadJobDto>(jobs));
         }
 
-        // TODO : Get jobs based on board id
         [HttpGet("board")]
-        public async Task<ActionResult<IEnumerable<ReadJobDto>>> GetBoardJobs()
+        public async Task<ActionResult<IEnumerable<ReadJobDto>>> GetAllTakenBoardJobs()
         {
             var user = await GetIdentityUser();
 
@@ -180,7 +179,7 @@ namespace ProjectManagementSystem.Controllers.JobController
             else if (job.receiverUserId == user.Id && (job.section_id == 0 || job.project_id != 0)) {
                 return BadRequest();
             }
-            else if (job.receiverUserId!=null&&job.section_id != 0) {
+            else if (job.receiverUserId != null && job.section_id != 0) {
                 return BadRequest();
             }
 
