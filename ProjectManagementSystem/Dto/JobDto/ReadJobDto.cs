@@ -18,6 +18,7 @@ namespace ProjectManagementSystem.Dto.JobDto
         public string createUserId { get; set; }
         public string receiverUserId { get; set; }
         public int project_id { get; set; }
+        public int order_no { get; set; }
 
         public List<ActivityHistory> activityHistories { get; set; }
         public List<CheckList> checkLists { get; set; }

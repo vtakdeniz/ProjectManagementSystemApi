@@ -34,6 +34,65 @@ namespace ProjectManagementSystem.Controllers
             _userManager = userManager;
         }
 
+        [HttpPost]
+        public async Task<ActionResult> UpdateOrder([FromQuery]int order_no,[FromQuery]int job_id) {
+
+            var user = await GetIdentityUser();
+
+            var job = await _context.jobs.Include(job => job.section)
+                .FirstOrDefaultAsync(job => job.Id == job_id);
+
+            if (job == null)
+            {
+                return NotFound();
+            }
+
+            var isUserAuthorized = await _context.userHasProjects
+                .AnyAsync(rel => rel.project_id == job.project_id
+                    && rel.user_id == user.Id)
+                ||
+                await _context.boardHasUsers.AnyAsync(rel => rel.board_id == job.section.board_id && rel.user_id == user.Id)
+                ||
+                await _context.boardHasAdmins
+                .AnyAsync(rel => rel.board_id == job.section.board_id && rel.user_id == user.Id)
+                ||
+                job.receiverUserId == user.Id;
+
+            if (!isUserAuthorized)
+            {
+                return Unauthorized();
+            }
+
+            var order = await _context.jobs.CountAsync(c => c.section_id == job.section.Id);
+            if (order_no>order) {
+                return BadRequest();
+            }
+
+            if (order_no >= job.order_no)
+            {
+                var jobs = await _context.jobs.Where(c => c.order_no <= order_no && c.order_no > job.order_no).ToListAsync();
+
+                foreach (Job j in jobs)
+                {
+                    j.order_no = j.order_no - 1;
+                }
+            }
+            else if (order_no <= job.order_no)
+            {
+                var jobs = await _context.jobs.Where(c => c.order_no >= order_no && c.order_no < job.order_no).ToListAsync();
+
+                foreach (Job j in jobs)
+                {
+                    j.order_no = j.order_no + 1;
+                }
+            }
+
+            job.order_no = order_no;
+
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
         [HttpPost("{id}/tag")]
         public async Task<ActionResult> AddTag(int id, [FromBody] CreateTagDto tagDto)
         {

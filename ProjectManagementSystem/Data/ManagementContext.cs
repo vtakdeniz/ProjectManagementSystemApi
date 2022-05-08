@@ -36,7 +36,7 @@ namespace ProjectManagementSystem.Data
 
             modelBuilder.Entity<Section>()
              .HasMany(s => s.jobs)
-             .WithOne(s => s.section);
+             .WithOne(s => s.section).OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Job>()
                 .HasOne(j => j.createUser)

@@ -52,7 +52,8 @@ namespace ProjectManagementSystem.MappingProfile
             CreateMap<Team, ReadTeamDto>();
             CreateMap<CreateTeamDto, Team>();
 
-            CreateMap<CreateSectionDto, Section>();
+            CreateMap<CreateSectionDto, Section>()
+                .ForMember(dto => dto.order_no, opt => opt.Ignore());
             CreateMap<Section,ReadSectionDto>();
 
             CreateMap<Job, ReadJobDto>()
@@ -63,14 +64,15 @@ namespace ProjectManagementSystem.MappingProfile
                 .ForMember(dto => dto.Id, opt => opt.Ignore())
                 .ForMember(dto => dto.jobHasUsers, opt => opt.Ignore())
                 .ForMember(dto => dto.createUserId, opt => opt.Ignore())
-                .ForMember(dto => dto.tags, opt => opt.Ignore());
+                .ForMember(dto => dto.tags, opt => opt.Ignore())
+                .ForMember(dto => dto.order_no, opt => opt.Ignore());
             CreateMap<Job, UpdateJobDto>();
             CreateMap<UpdateJobDto,Job >()
                 .ForMember(dto => dto.activityHistories, opt => opt.Ignore())
                 .ForMember(dto => dto.checkLists, opt => opt.Ignore())
                 .ForMember(dto => dto.attachments, opt => opt.Ignore())
                 .ForMember(dto => dto.tags, opt => opt.Ignore())
-                .ForMember(dto => dto.jobHasUsers, opt => opt.Ignore()); ;
+                .ForMember(dto => dto.jobHasUsers, opt => opt.Ignore());
 
             CreateMap<CreateTagDto, Tags>();
             

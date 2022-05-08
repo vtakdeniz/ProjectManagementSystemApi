@@ -12,12 +12,13 @@ namespace ProjectManagementSystem.Models.ProjectElements
         [Key]
         public int Id { get; set; }
         public string sectionName { get; set; }
-
+        public int order_no { get; set; }
         public int board_id { get; set; }
 
         [JsonIgnore]
         public Board board { get; set; }
 
         public List<Job> jobs { get; set; }
+
     }
 }

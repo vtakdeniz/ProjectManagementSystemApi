@@ -151,7 +151,7 @@ namespace ProjectManagementSystem.Controllers.JobController
 
             var user = await GetIdentityUser();
 
-            var section = await _context.sections.FirstOrDefaultAsync(section=>section.Id==createJobDto.section_id);
+            var section = await _context.sections.Include(s=>s.board).FirstOrDefaultAsync(section=>section.Id==createJobDto.section_id);
 
             var job = _mapper.Map<Job>(createJobDto);
             job.createUserId = user.Id;
@@ -222,6 +222,14 @@ namespace ProjectManagementSystem.Controllers.JobController
 
             job.section = section;
             job.section_id = section.Id;
+
+            var order = await _context.jobs.CountAsync(job=>job.section_id==section.Id);
+            job.order_no = order + 1;
+
+            if (job.section.board.project_id != 0) {
+                job.project_id = job.section.board.project_id;
+            }
+
             await _context.jobs.AddAsync(job);
             await _context.SaveChangesAsync();
 
@@ -235,7 +243,7 @@ namespace ProjectManagementSystem.Controllers.JobController
                     await _context.tags.AddAsync(tag);
                 }
             }
-
+            await _context.SaveChangesAsync();
             return CreatedAtAction("GetJob", new { id = job.Id }, _mapper.Map<ReadJobDto>(job));
         }
 

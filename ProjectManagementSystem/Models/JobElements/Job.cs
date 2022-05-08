@@ -22,7 +22,7 @@ namespace ProjectManagementSystem.Models.JobElements
         public DateTime startDate { get; set; } = DateTime.Now;
         public DateTime endDate { get; set; }
         public bool isFinished { get; set; } = false;
-
+        public int order_no { get; set; }
         [Required]
         public string createUserId { get; set; }
         public User createUser { get; set; }

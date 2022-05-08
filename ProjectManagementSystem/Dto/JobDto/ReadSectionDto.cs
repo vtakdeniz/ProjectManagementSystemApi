@@ -8,6 +8,7 @@ namespace ProjectManagementSystem.Dto.JobDto
         public int Id { get; set; }
         public string sectionName { get; set; }
         public int board_id { get; set; }
+        public int order_no { get; set; }
         public List<ReadJobDto> jobs { get; set; }
     }
 }
