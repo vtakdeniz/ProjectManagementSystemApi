@@ -117,7 +117,7 @@ namespace ProjectManagementSystem.Controllers
             {
                 job_id = jobFromRepo.Id,
                 activityType = ActivityTypes.ACTIVITY_TYPE_ADD_TAG,
-                detail = String.Format("{0} added a tag with name : '{1}' to this job", user.UserName, tag.tagName)
+                detail = string.Format("{0} added a tag with name : '{1}' to this job", user.UserName, tag.tagName)
             };
             await _context.activityHistories.AddAsync(activity);
             await _context.tags.AddAsync(tag);

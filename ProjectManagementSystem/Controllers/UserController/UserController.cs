@@ -57,6 +57,57 @@ namespace ProjectManagementSystem.Controllers.UserController
             return Ok(_mapper.Map<ReadUserDto>(user));
         }
 
+        [HttpPut]
+        public async Task<ActionResult> UpdateUser(UpdateUserDto dto) {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _context.Users.Include(u => u.notifications).FirstOrDefaultAsync(u => u.Id == userId);
+            if (userId == null || user == null)
+            {
+                return NotFound();
+            }
+            user.Email = dto.email;
+            user.firstName = dto.firstName;
+            user.lastName = dto.lastName;
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpPatch("username")]
+        public async Task<ActionResult> UpdateUsername([FromQuery]string userName) {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _context.Users.Include(u => u.notifications).FirstOrDefaultAsync(u => u.Id == userId);
+            if (userId == null || user == null)
+            {
+                return NotFound();
+            }
+            var exists = await _userManager.FindByNameAsync(userName);
+            if (exists!=null) {
+                return BadRequest();
+            }
+
+            await _userManager.SetUserNameAsync(user,userName);
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpPatch("password")]
+        public async Task<ActionResult> UpdatePassword([FromQuery] string current_password,[FromQuery]string new_password)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _context.Users.Include(u => u.notifications).FirstOrDefaultAsync(u => u.Id == userId);
+            if (userId == null || user == null)
+            {
+                return NotFound();
+            }
+
+            var res=await _userManager.ChangePasswordAsync(user, current_password, new_password);
+            if (res.Succeeded==false) {
+                return BadRequest();
+            }
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
         [HttpDelete]
         public async Task<IActionResult> DeleteUser()
         {
