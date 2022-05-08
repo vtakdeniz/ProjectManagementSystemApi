@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjectManagementSystem.Data;
@@ -38,8 +39,8 @@ namespace ProjectManagementSystem.Controllers.JobController
         public async Task<ActionResult<ReadJobDto>> GetJob(int id) {
             var user = await GetIdentityUser();
 
-            var job = await _context.jobs
-                .FindAsync(id);
+            var job = await _context.jobs.Include(job => job.section)
+                .FirstOrDefaultAsync(job=>job.Id==id);
 
             if (job == null) {
                 return NotFound();
@@ -55,7 +56,12 @@ namespace ProjectManagementSystem.Controllers.JobController
                 ||
                 await _context.userAssignedProjects
                 .AnyAsync(rel => rel.project_id == job.project_id
-                    && rel.receiver_id == user.Id);
+                    && rel.receiver_id == user.Id)
+                ||
+                await _context.boardHasUsers.AnyAsync(rel => rel.board_id == job.section.board_id && rel.user_id == user.Id)
+                ||
+                await _context.boardHasAdmins
+                .AnyAsync(rel=>rel.board_id==job.section.board_id&&rel.user_id==user.Id);
 
             if (!isUserAuthorized)
             {
@@ -77,7 +83,7 @@ namespace ProjectManagementSystem.Controllers.JobController
             return Ok(_mapper.Map<ReadJobDto>(jobs));
         }
 
-        [HttpGet("board")]
+        [HttpGet("allboardtaken")]
         public async Task<ActionResult<IEnumerable<ReadJobDto>>> GetAllTakenBoardJobs()
         {
             var user = await GetIdentityUser();
@@ -281,6 +287,40 @@ namespace ProjectManagementSystem.Controllers.JobController
             await _context.SaveChangesAsync();
 
             return Ok();
+        }
+
+        [HttpPatch("{id}")]
+        public async Task<ActionResult> PartialJobUpdate(int id, JsonPatchDocument<UpdateJobDto> patchDocument) {
+            var user = await GetIdentityUser();
+            if (user == null)
+            {
+                return NotFound(new { error = "User doesn't exists in the current context" });
+            }
+
+            var jobFromRepo = await _context.jobs.Include(job=>job.section).FirstOrDefaultAsync(job=>job.Id==id);
+            if (jobFromRepo == null)
+            {
+                return NotFound();
+            }
+
+            var isUserAuthorized = await _context.boardHasAdmins
+                .AnyAsync(rel => rel.user_id == user.Id && rel.board_id == jobFromRepo.section.board_id);
+
+            if (!isUserAuthorized)
+            {
+                return Unauthorized();
+            }
+
+           
+            var jobToPatch = _mapper.Map<UpdateJobDto>(jobFromRepo);
+            patchDocument.ApplyTo(jobToPatch, ModelState);
+            if (!TryValidateModel(jobToPatch))
+            {
+                return ValidationProblem(ModelState);
+            }
+            _mapper.Map(jobToPatch, jobFromRepo);
+            await _context.SaveChangesAsync();
+            return NoContent();
         }
 
         [ApiExplorerSettings(IgnoreApi = true)]
