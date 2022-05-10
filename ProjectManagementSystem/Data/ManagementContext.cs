@@ -74,7 +74,7 @@ namespace ProjectManagementSystem.Data
 
             modelBuilder.Entity<Project>()
                .HasMany(p => p.boards)
-               .WithOne(b => b.project).OnDelete(DeleteBehavior.NoAction);
+               .WithOne(b => b.project).OnDelete(DeleteBehavior.Cascade);
 
             ManyToManyRelationshipConfiguration(modelBuilder);
 
@@ -99,7 +99,7 @@ namespace ProjectManagementSystem.Data
             modelBuilder.Entity<BoardHasTeams>()
                 .HasOne(r => r.board)
                 .WithMany(board => board.boardHasTeams)
-                .HasForeignKey(r => r.board_id).OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(r => r.board_id).OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<BoardHasTeams>()
                 .HasOne(r => r.team)
                 .WithMany(team => team.boardHasTeams)

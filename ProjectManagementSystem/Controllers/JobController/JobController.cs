@@ -39,7 +39,12 @@ namespace ProjectManagementSystem.Controllers.JobController
         public async Task<ActionResult<ReadJobDto>> GetJob(int id) {
             var user = await GetIdentityUser();
 
-            var job = await _context.jobs.Include(job => job.section)
+            var job = await _context.jobs
+                .Include(job => job.section)
+                .Include(job=>job.activityHistories)
+                .Include(job => job.tags)
+                .Include(job => job.checkLists)
+
                 .FirstOrDefaultAsync(job=>job.Id==id);
 
             if (job == null) {

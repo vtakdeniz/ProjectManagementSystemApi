@@ -126,8 +126,8 @@ namespace ProjectManagementSystem.Controllers
             return Ok();
         }
 
-        [HttpPost("{id}/checklist")]
-        public async Task<ActionResult> AddChecklist(int id, [FromBody] CreateChecklistDto checklistDto)
+        [HttpPost("checklist")]
+        public async Task<ActionResult> AddChecklist([FromBody] CreateChecklistDto checklistDto)
         {
             var user = await GetIdentityUser();
             if (user == null)
@@ -136,7 +136,7 @@ namespace ProjectManagementSystem.Controllers
             }
             var jobFromRepo = await _context.jobs
                 .Include(job => job.section)
-                .Where(rel => rel.Id == id).FirstAsync();
+                .Where(rel => rel.Id == checklistDto.job_id).FirstAsync();
             if (jobFromRepo == null)
             {
                 return NotFound();

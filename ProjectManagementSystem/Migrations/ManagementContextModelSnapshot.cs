@@ -793,7 +793,7 @@ namespace ProjectManagementSystem.Migrations
                     b.HasOne("ProjectManagementSystem.Models.ProjectElements.Project", "project")
                         .WithMany("boards")
                         .HasForeignKey("projectId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("project");
                 });
@@ -844,7 +844,7 @@ namespace ProjectManagementSystem.Migrations
                     b.HasOne("ProjectManagementSystem.Models.ProjectElements.Board", "board")
                         .WithMany("boardHasTeams")
                         .HasForeignKey("board_id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("ProjectManagementSystem.Models.ProjectElements.Team", "team")
