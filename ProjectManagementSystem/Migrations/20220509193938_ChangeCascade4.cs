@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ProjectManagementSystem.Migrations
 {
-    public partial class AddedUserAuth : Migration
+    public partial class ChangeCascade4 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -179,6 +179,8 @@ namespace ProjectManagementSystem.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     project_id = table.Column<int>(type: "int", nullable: false),
                     projectId = table.Column<int>(type: "int", nullable: true),
+                    board_name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     startDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     endDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     isFinished = table.Column<bool>(type: "bit", nullable: false)
@@ -190,8 +192,7 @@ namespace ProjectManagementSystem.Migrations
                         name: "FK_boards_projects_projectId",
                         column: x => x.projectId,
                         principalTable: "projects",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -256,12 +257,14 @@ namespace ProjectManagementSystem.Migrations
                         name: "FK_userHasProjects_AspNetUsers_user_id",
                         column: x => x.user_id,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_userHasProjects_projects_project_id",
                         column: x => x.project_id,
                         principalTable: "projects",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -278,12 +281,14 @@ namespace ProjectManagementSystem.Migrations
                         name: "FK_boardHasAdmins_AspNetUsers_user_id",
                         column: x => x.user_id,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_boardHasAdmins_boards_board_id",
                         column: x => x.board_id,
                         principalTable: "boards",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -300,12 +305,14 @@ namespace ProjectManagementSystem.Migrations
                         name: "FK_boardHasUsers_AspNetUsers_user_id",
                         column: x => x.user_id,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_boardHasUsers_boards_board_id",
                         column: x => x.board_id,
                         principalTable: "boards",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -315,6 +322,7 @@ namespace ProjectManagementSystem.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     sectionName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    order_no = table.Column<int>(type: "int", nullable: false),
                     board_id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -342,12 +350,14 @@ namespace ProjectManagementSystem.Migrations
                         name: "FK_boardHasTeams_boards_board_id",
                         column: x => x.board_id,
                         principalTable: "boards",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_boardHasTeams_teams_team_id",
                         column: x => x.team_id,
                         principalTable: "teams",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -379,14 +389,17 @@ namespace ProjectManagementSystem.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     section_id = table.Column<int>(type: "int", nullable: false),
+                    sectionId = table.Column<int>(type: "int", nullable: true),
                     jobTitle = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     jobDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     startDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     endDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     isFinished = table.Column<bool>(type: "bit", nullable: false),
+                    order_no = table.Column<int>(type: "int", nullable: false),
                     createUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     receiverUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    project_id = table.Column<int>(type: "int", nullable: false)
+                    project_id = table.Column<int>(type: "int", nullable: false),
+                    projectId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -403,14 +416,13 @@ namespace ProjectManagementSystem.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_jobs_projects_project_id",
-                        column: x => x.project_id,
+                        name: "FK_jobs_projects_projectId",
+                        column: x => x.projectId,
                         principalTable: "projects",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_jobs_sections_section_id",
-                        column: x => x.section_id,
+                        name: "FK_jobs_sections_sectionId",
+                        column: x => x.sectionId,
                         principalTable: "sections",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -423,6 +435,8 @@ namespace ProjectManagementSystem.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     job_id = table.Column<int>(type: "int", nullable: false),
+                    activityType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    detail = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     date = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -442,7 +456,11 @@ namespace ProjectManagementSystem.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    job_id = table.Column<int>(type: "int", nullable: false)
+                    job_id = table.Column<int>(type: "int", nullable: false),
+                    name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    fileType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    fileData = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    createdOn = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -474,6 +492,60 @@ namespace ProjectManagementSystem.Migrations
                         principalTable: "jobs",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "notifications",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    action_type = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    target_type = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    owner_user_id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    sender_userId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    sender_user_id = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    projectId = table.Column<int>(type: "int", nullable: true),
+                    project_id = table.Column<int>(type: "int", nullable: false),
+                    boardId = table.Column<int>(type: "int", nullable: true),
+                    board_id = table.Column<int>(type: "int", nullable: false),
+                    jobId = table.Column<int>(type: "int", nullable: true),
+                    job_id = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_notifications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_notifications_AspNetUsers_owner_user_id",
+                        column: x => x.owner_user_id,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_notifications_AspNetUsers_sender_userId",
+                        column: x => x.sender_userId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_notifications_boards_boardId",
+                        column: x => x.boardId,
+                        principalTable: "boards",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_notifications_jobs_jobId",
+                        column: x => x.jobId,
+                        principalTable: "jobs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_notifications_projects_projectId",
+                        column: x => x.projectId,
+                        principalTable: "projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -598,9 +670,9 @@ namespace ProjectManagementSystem.Migrations
                 column: "createUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_jobs_project_id",
+                name: "IX_jobs_projectId",
                 table: "jobs",
-                column: "project_id");
+                column: "projectId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_jobs_receiverUserId",
@@ -608,9 +680,34 @@ namespace ProjectManagementSystem.Migrations
                 column: "receiverUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_jobs_section_id",
+                name: "IX_jobs_sectionId",
                 table: "jobs",
-                column: "section_id");
+                column: "sectionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_notifications_boardId",
+                table: "notifications",
+                column: "boardId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_notifications_jobId",
+                table: "notifications",
+                column: "jobId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_notifications_owner_user_id",
+                table: "notifications",
+                column: "owner_user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_notifications_projectId",
+                table: "notifications",
+                column: "projectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_notifications_sender_userId",
+                table: "notifications",
+                column: "sender_userId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_sections_board_id",
@@ -687,6 +784,9 @@ namespace ProjectManagementSystem.Migrations
 
             migrationBuilder.DropTable(
                 name: "checkLists");
+
+            migrationBuilder.DropTable(
+                name: "notifications");
 
             migrationBuilder.DropTable(
                 name: "tags");

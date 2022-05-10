@@ -93,15 +93,16 @@ namespace ProjectManagementSystem.Controllers
             return Ok();
         }
 
-        [HttpPost("{id}/tag")]
-        public async Task<ActionResult> AddTag(int id, [FromBody] CreateTagDto tagDto)
+        [HttpPost("tag")]
+        public async Task<ActionResult> AddTag([FromBody] CreateTagDto tagDto)
         {
             var user = await GetIdentityUser();
             if (user == null)
             {
                 return NotFound(new { error = "User doesn't exists" });
             }
-            var jobFromRepo = await _context.jobs.FindAsync(id);
+            var jobFromRepo = await _context.jobs.Include(j => j.section)
+                .Where(j => j.Id == tagDto.job_id).FirstOrDefaultAsync();
             if (jobFromRepo == null)
             {
                 return NotFound();

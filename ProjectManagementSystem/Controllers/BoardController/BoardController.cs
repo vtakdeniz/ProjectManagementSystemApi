@@ -79,6 +79,7 @@ namespace ProjectManagementSystem.Controllers.BoardController
         [HttpGet]
         public async Task<ActionResult<ReadBoardDto>> GetBoards()
         {
+            // TODO : Fix collision
             var user = await GetIdentityUser();
 
             var userBoards = await _context.boardHasUsers

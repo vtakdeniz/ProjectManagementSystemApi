@@ -10,8 +10,8 @@ using ProjectManagementSystem.Data;
 namespace ProjectManagementSystem.Migrations
 {
     [DbContext(typeof(ManagementContext))]
-    [Migration("20220412132216_JobProjectRelationUpdate")]
-    partial class JobProjectRelationUpdate
+    [Migration("20220509193938_ChangeCascade4")]
+    partial class ChangeCascade4
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -257,6 +257,9 @@ namespace ProjectManagementSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("order_no")
+                        .HasColumnType("int");
+
                     b.Property<int?>("projectId")
                         .HasColumnType("int");
 
@@ -381,6 +384,9 @@ namespace ProjectManagementSystem.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("board_id")
+                        .HasColumnType("int");
+
+                    b.Property<int>("order_no")
                         .HasColumnType("int");
 
                     b.Property<string>("sectionName")
@@ -751,7 +757,8 @@ namespace ProjectManagementSystem.Migrations
 
                     b.HasOne("ProjectManagementSystem.Models.ProjectElements.Project", "project")
                         .WithMany("projectJobs")
-                        .HasForeignKey("projectId");
+                        .HasForeignKey("projectId")
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("ProjectManagementSystem.Models.UserElements.User", "receiverUser")
                         .WithMany("userReceivedJobs")
@@ -760,7 +767,8 @@ namespace ProjectManagementSystem.Migrations
 
                     b.HasOne("ProjectManagementSystem.Models.ProjectElements.Section", "section")
                         .WithMany("jobs")
-                        .HasForeignKey("sectionId");
+                        .HasForeignKey("sectionId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("createUser");
 
@@ -786,7 +794,8 @@ namespace ProjectManagementSystem.Migrations
                 {
                     b.HasOne("ProjectManagementSystem.Models.ProjectElements.Project", "project")
                         .WithMany("boards")
-                        .HasForeignKey("projectId");
+                        .HasForeignKey("projectId")
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("project");
                 });
@@ -881,7 +890,7 @@ namespace ProjectManagementSystem.Migrations
                     b.HasOne("ProjectManagementSystem.Models.UserElements.User", "user")
                         .WithMany("jobHasUsers")
                         .HasForeignKey("user_id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("job");
@@ -894,13 +903,13 @@ namespace ProjectManagementSystem.Migrations
                     b.HasOne("ProjectManagementSystem.Models.ProjectElements.Team", "team")
                         .WithMany("teamHasUsers")
                         .HasForeignKey("team_id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("ProjectManagementSystem.Models.UserElements.User", "user")
                         .WithMany("teamHasUsers")
                         .HasForeignKey("user_id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("team");
@@ -919,13 +928,13 @@ namespace ProjectManagementSystem.Migrations
                     b.HasOne("ProjectManagementSystem.Models.ProjectElements.Project", "project")
                         .WithMany("userAssignedProjects")
                         .HasForeignKey("project_id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("ProjectManagementSystem.Models.UserElements.User", "receiverUser")
                         .WithMany("userAssignedProjects")
                         .HasForeignKey("receiver_id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("assignerUser");
