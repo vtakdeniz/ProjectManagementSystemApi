@@ -412,5 +412,4 @@ startenv.sh
 ProjectManagementSystem.csproj
 ProjectManagementSystem/appsettings.Development.json
 ProjectManagementSystem.sln
-
-
+Migrations/
