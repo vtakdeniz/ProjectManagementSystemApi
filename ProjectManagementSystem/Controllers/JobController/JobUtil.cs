@@ -224,6 +224,41 @@ namespace ProjectManagementSystem.Controllers
             return Ok();
         }
 
+        [HttpPost("togglechecklist/{id}")]
+        public async Task<ActionResult> ToggleChecklist(int id) {
+            var user = await GetIdentityUser();
+
+            if (user == null)
+            {
+                return NotFound(new { error = "User doesn't exists" });
+            }
+
+            var checklist = await _context.checkLists.Include(c => c.job)
+                .ThenInclude(j => j.section).ThenInclude(s => s.board)
+                .Where(c => c.Id == id).FirstOrDefaultAsync();
+
+            if (checklist == null) {
+                return NotFound();
+            }
+
+            var isUserAuthorized = await _context.userHasProjects
+                .AnyAsync(rel => rel.project_id == checklist.job.project_id && rel.user_id == user.Id)
+                ||
+                await _context.boardHasUsers
+                .AnyAsync(rel => rel.user_id == user.Id && rel.board_id == checklist.job.section.board.Id)
+                ||
+                await _context.boardHasAdmins
+                .AnyAsync(rel => rel.user_id == user.Id && rel.board_id == checklist.job.section.board.Id);
+
+            if (!isUserAuthorized) {
+                return Unauthorized();
+            }
+
+            checklist.isSelected = !checklist.isSelected;
+
+            return Ok();
+        }
+
         [ApiExplorerSettings(IgnoreApi = true)]
         [NonAction]
         private async Task<User> GetIdentityUser()

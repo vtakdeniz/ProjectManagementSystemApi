@@ -313,7 +313,7 @@ namespace ProjectManagementSystem.Controllers.BoardController
         }
 
         [HttpPost("assignadmin")]
-        public async Task<ActionResult> AssignAdmin([FromQuery]int board_id,string user_id)
+        public async Task<ActionResult> AssignAdmin([FromQuery]int board_id,string user_email)
         {
             var user = await GetIdentityUser();
             if (user == null)
@@ -325,13 +325,16 @@ namespace ProjectManagementSystem.Controllers.BoardController
             {
                 return NotFound();
             }
+
             var targetUser = await _context.Users.Include(u => u.notifications)
-                .FirstOrDefaultAsync(u => u.Id == user_id);
+                .FirstOrDefaultAsync(u => u.Email == user_email);
 
             if (targetUser == null)
             {
                 return NotFound();
             }
+
+            var user_id = targetUser.Id;
 
             var isUserAuthorized = await _context.boardHasAdmins
                 .AnyAsync(rel => rel.user_id == user.Id && rel.board_id == boardFromRepo.Id);

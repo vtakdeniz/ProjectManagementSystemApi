@@ -193,6 +193,11 @@ namespace ProjectManagementSystem.Controllers.UserController
                     board_id=notification.board_id,
                     user_id=userId
                 };
+                var boardHasUsers = new BoardHasUsers
+                {
+                    user_id=userId,
+                    board_id=notification.board_id
+                };
                 await _context.boardHasAdmins.AddAsync(boardHasAdmins);
                 user.notifications.Remove(notification);
                 await _context.SaveChangesAsync();
