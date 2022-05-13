@@ -10,5 +10,6 @@ namespace ProjectManagementSystem.Models.JobElements
         public const string ACTIVITY_TYPE_ADD_LINK = "ADD_LINK";
         public const string ACTIVITY_TYPE_ADD_CHECKLIST = "ADD_CHECK";
         public const string ACTIVITY_TYPE_ADD_TAG= "ADD_TAG";
+        public const string ACTIVITY_TYPE_REMOVE_TAG = "REMOVE_TAG";
     }
 }

@@ -126,6 +126,46 @@ namespace ProjectManagementSystem.Controllers
             return Ok();
         }
 
+        [HttpPost("untag/{id}")]
+        public async Task<ActionResult> UnTag(int id)
+        {
+            var user = await GetIdentityUser();
+            if (user == null)
+            {
+                return NotFound(new { error = "User doesn't exists" });
+            }
+
+            var tag = await _context.tags
+                .Include(tag => tag.job)
+                .ThenInclude(job=>job.section)
+                .Where(tag => tag.Id == id).FirstOrDefaultAsync();
+
+            var jobFromRepo = tag.job;
+
+            if (jobFromRepo == null)
+            {
+                return NotFound();
+            }
+
+            var isUserAuthorized = await _context.boardHasAdmins
+              .AnyAsync(rel => rel.board_id == jobFromRepo.section.board_id && rel.user_id == user.Id);
+            if (!isUserAuthorized)
+            {
+                return Unauthorized();
+            }
+            var activity = new ActivityHistory()
+            {
+                job_id = jobFromRepo.Id,
+                activityType = ActivityTypes.ACTIVITY_TYPE_REMOVE_TAG,
+                detail = string.Format("{0} removed a tag with name : '{1}' from this job", user.UserName, tag.tagName)
+            };
+            await _context.activityHistories.AddAsync(activity);
+            _context.tags.Remove(tag);
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+
         [HttpPost("checklist")]
         public async Task<ActionResult> AddChecklist([FromBody] CreateChecklistDto checklistDto)
         {
