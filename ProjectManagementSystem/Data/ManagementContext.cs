@@ -152,11 +152,11 @@ namespace ProjectManagementSystem.Data
             modelBuilder.Entity<UserAssignedProjects>()
                 .HasOne(r => r.project)
                 .WithMany(project => project.userAssignedProjects)
-                .HasForeignKey(r => r.project_id).OnDelete(DeleteBehavior.NoAction);
+                .HasForeignKey(r => r.project_id).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<UserAssignedProjects>()
                 .HasOne(r => r.receiverUser)
                 .WithMany(user => user.userAssignedProjects)
-                .HasForeignKey(r => r.receiver_id).OnDelete(DeleteBehavior.NoAction);
+                .HasForeignKey(r => r.receiver_id).OnDelete(DeleteBehavior.Cascade);
 
 
             modelBuilder.Entity<UserHasProjects>()

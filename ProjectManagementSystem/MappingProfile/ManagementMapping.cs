@@ -21,7 +21,11 @@ namespace ProjectManagementSystem.MappingProfile
             CreateMap<User, ReadUserDto>();
             CreateMap<RegisterUserDto, User>();
 
-            CreateMap<Project, ReadProjectDto>();
+            CreateMap<Project, ReadProjectDto>()
+                .ForMember(dest => dest.userAssignedProjects,
+                    src => src.MapFrom(src => src.userAssignedProjects.Select(s => s.receiverUser)))
+            .ForMember(dest => dest.userHasProjects,
+                    src => src.MapFrom(src => src.userHasProjects.Select(s => s.user)));
             CreateMap<Project, UpdateProjectDto>();
             CreateMap<UpdateProjectDto,Project>()
                 .ForMember(dto => dto.userAssignedProjects, opt => opt.Ignore())

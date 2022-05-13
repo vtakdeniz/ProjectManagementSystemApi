@@ -4,6 +4,7 @@ using ProjectManagementSystem.Dto.UserDto;
 using ProjectManagementSystem.Dto.BoardReadDto;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using ProjectManagementSystem.Dto.JobDto;
 
 namespace ProjectManagementSystem.Dto.ProjectDto
 {
@@ -21,5 +22,9 @@ namespace ProjectManagementSystem.Dto.ProjectDto
         
         public ReadUserDto assigner_user { get; set; }
         public List<ReadBoardDto> boards{ get; set; }
+        public List<ReadUserDto> userHasProjects { get; set; }
+        public List<ReadUserDto> userAssignedProjects { get; set; }
+        public List<ReadJobDto> projectJobs { get; set; }
+        public List<ReadTeamDto> teams { get; set; }
     }
 }

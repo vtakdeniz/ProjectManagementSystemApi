@@ -50,12 +50,56 @@ namespace ProjectManagementSystem.Controllers.ProjectController
             var userHasProjects = await _context.userHasProjects
                 .Include(rel=>rel.project)
                 .ThenInclude(p=>p.boards)
+
+                .Include(rel=>rel.project)
+                .ThenInclude(p=>p.userAssignedProjects)
+                .ThenInclude(rel=>rel.receiverUser)
+
+                .Include(rel => rel.project)
+                .ThenInclude(p => p.userHasProjects)
+                .ThenInclude(rel => rel.user)
+
+                .Include(rel => rel.project)
+                .ThenInclude(p => p.projectJobs)
+
+                .Include(rel => rel.project)
+                .ThenInclude(p => p.teams)
+
                 .FirstOrDefaultAsync(relation=>relation.project_id==id&&relation.user_id==user.Id);
 
-            if (userHasProjects==null) {
+            var userAssignedProjects= await _context.userAssignedProjects
+                .Include(rel => rel.project)
+                .ThenInclude(p => p.boards)
+
+                .Include(rel => rel.project)
+                .ThenInclude(p => p.userAssignedProjects)
+                .ThenInclude(rel => rel.receiverUser)
+
+                .Include(rel => rel.project)
+                .ThenInclude(p => p.userHasProjects)
+                .ThenInclude(rel => rel.user)
+
+                .Include(rel => rel.project)
+                .ThenInclude(p => p.projectJobs)
+
+                .Include(rel => rel.project)
+                .ThenInclude(p => p.teams)
+                .Where(relation => relation.receiver_id == user.Id).FirstOrDefaultAsync();
+
+            var result = new Project();
+
+            if (userHasProjects != null)
+            {
+                result = userHasProjects.project;
+            }
+            else if(userHasProjects==null&&userAssignedProjects!=null){
+                result = userAssignedProjects.project;
+            }
+
+            if (userHasProjects==null&&userAssignedProjects==null) {
                 return NotFound();
             }
-            return Ok(_mapper.Map<ReadProjectDto>(userHasProjects.project));
+            return Ok(_mapper.Map<ReadProjectDto>(result));
         }
 
         [HttpGet]
@@ -89,9 +133,22 @@ namespace ProjectManagementSystem.Controllers.ProjectController
             }
 
             var userAssignedProjectsRel = await _context.userAssignedProjects
-                .Include(r => r.project)
+                .Include(rel => rel.project)
                 .ThenInclude(p => p.boards)
-                .Include(r=>r.assignerUser)
+
+                .Include(rel => rel.project)
+                .ThenInclude(p => p.userAssignedProjects)
+                .ThenInclude(rel => rel.receiverUser)
+
+                .Include(rel => rel.project)
+                .ThenInclude(p => p.userHasProjects)
+                .ThenInclude(rel => rel.user)
+
+                .Include(rel => rel.project)
+                .ThenInclude(p => p.projectJobs)
+
+                .Include(rel => rel.project)
+                .ThenInclude(p => p.teams)
                 .Where(relation => relation.receiver_id == user.Id).ToListAsync();
 
             if (userAssignedProjectsRel == null)
@@ -179,7 +236,7 @@ namespace ProjectManagementSystem.Controllers.ProjectController
 
         [HttpPost]
         [Route("assignproject")]
-        public async Task<ActionResult> AssignProject([FromQuery] int project_id, string user_id) {
+        public async Task<ActionResult> AssignProject([FromQuery] int project_id, string user_email) {
 
             var user = await GetIdentityUser();
             if (user == null)
@@ -191,12 +248,15 @@ namespace ProjectManagementSystem.Controllers.ProjectController
             {
                 return NotFound();
             }
-            var targetUser = await _context.Users.Include(u => u.notifications)
-                .FirstOrDefaultAsync(u => u.Id == user_id);
+            var targetUser = await _context.users
+                .Include(u => u.notifications)
+                .Where(u => u.Email == user_email).FirstOrDefaultAsync();
             
-            if (targetUser == null) {
+            if (targetUser==null) {
                 return NotFound();
             }
+            var user_id = targetUser.Id;
+
             var userHasProject = targetUser.notifications.Any(n => n.project_id == project_id)
                 ||
                 await _context.userAssignedProjects
