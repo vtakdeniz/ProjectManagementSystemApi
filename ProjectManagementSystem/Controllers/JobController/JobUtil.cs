@@ -295,7 +295,7 @@ namespace ProjectManagementSystem.Controllers
             }
 
             checklist.isSelected = !checklist.isSelected;
-
+            await _context.SaveChangesAsync();
             return Ok();
         }
 
