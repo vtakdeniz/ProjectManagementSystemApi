@@ -135,11 +135,11 @@ namespace ProjectManagementSystem.Data
             modelBuilder.Entity<TeamHasUsers>()
                 .HasOne(r => r.team)
                 .WithMany(team => team.teamHasUsers)
-                .HasForeignKey(r => r.team_id).OnDelete(DeleteBehavior.NoAction);
+                .HasForeignKey(r => r.team_id).OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<TeamHasUsers>()
                 .HasOne(r => r.user)
                 .WithMany(user => user.teamHasUsers)
-                .HasForeignKey(r => r.user_id).OnDelete(DeleteBehavior.NoAction);
+                .HasForeignKey(r => r.user_id).OnDelete(DeleteBehavior.Restrict);
 
 
             modelBuilder.Entity<UserAssignedProjects>()
