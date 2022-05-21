@@ -44,6 +44,8 @@ namespace ProjectManagementSystem.Controllers.JobController
                 .Include(job=>job.activityHistories)
                 .Include(job => job.tags)
                 .Include(job => job.checkLists)
+                .Include(job=>job.jobHasUsers)
+                .ThenInclude(rel=>rel.user)
 
                 .FirstOrDefaultAsync(job=>job.Id==id);
 

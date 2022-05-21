@@ -18,7 +18,7 @@ using ProjectManagementSystem.Models.UserElements;
 using Microsoft.AspNetCore.Authorization;
 
 namespace ProjectManagementSystem.Controllers.TeamController
-{   
+{
 
     [Route("api/[controller]")]
     [ApiController]
@@ -46,7 +46,7 @@ namespace ProjectManagementSystem.Controllers.TeamController
                 return NotFound(new { error = "User doesn't exists in the current context" });
             }
 
-            var team = await _context.teams.FindAsync(id);
+            var team = await _context.teams.Include(team=>team.teamHasUsers).ThenInclude(rel=>rel.user).Where(team=>team.Id==id).FirstOrDefaultAsync();
 
             if (team == null) {
                 return NotFound();
@@ -78,7 +78,7 @@ namespace ProjectManagementSystem.Controllers.TeamController
                .AnyAsync(relation => relation.project_id == teamDto.project_id
                    && relation.user_id == user.Id);
 
-            if(!userHasProjectsRel)
+            if (!userHasProjectsRel)
             {
                 return Unauthorized();
             }
@@ -87,10 +87,10 @@ namespace ProjectManagementSystem.Controllers.TeamController
 
             await _context.teams.AddAsync(team);
 
-            if (teamDto.user_ids==null) {
+            if (teamDto.user_ids == null) {
                 await _context.SaveChangesAsync();
             }
-            else 
+            else
             {
                 bool areAllDtoUsersValid = teamDto.user_ids
                    .All(id => _context.userAssignedProjects.Any(rel => rel.receiver_id == id &&
@@ -114,8 +114,8 @@ namespace ProjectManagementSystem.Controllers.TeamController
                 {
                     await _context.teamHasUsers.AddAsync(
                             new TeamHasUsers {
-                                team_id=team.Id,
-                                user_id=userFromRepo.Id
+                                team_id = team.Id,
+                                user_id = userFromRepo.Id
                             }
                         );
                 }
@@ -156,6 +156,53 @@ namespace ProjectManagementSystem.Controllers.TeamController
             await _context.SaveChangesAsync();
 
             return Ok();
+        }
+
+        [HttpDelete]
+        public async Task<ActionResult> RemoveUserFromTeam([FromQuery] string user_id,[FromQuery] int team_id) {
+            var user = await GetIdentityUser();
+
+            var team = await _context.teams.Include(t => t.project).Where(t => t.Id == team_id).FirstOrDefaultAsync();
+
+            if (team == null)
+            {
+                return NotFound();
+            }
+
+            var isUserAuthorized = await _context.userHasProjects.AnyAsync(rel => rel.user_id == user.Id && rel.project_id == team.project_id);
+            if (!isUserAuthorized)
+            {
+                return Unauthorized();
+            }
+
+            var rel = await _context.teamHasUsers.Where(team => team.team_id == team_id && team.user_id == user_id).FirstOrDefaultAsync();
+            if (rel == null) {
+                return NotFound();
+            }
+
+            _context.teamHasUsers.Remove(rel);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteTeam(int id) {
+            var user = await GetIdentityUser();
+
+            var team=await _context.teams.Include(t => t.project).Where(t => t.Id == id).FirstOrDefaultAsync();
+
+            if (team==null) {
+                return NotFound();
+            }
+
+            var isUserAuthorized = await _context.userHasProjects.AnyAsync(rel=>rel.user_id==user.Id&&rel.project_id==team.project_id);
+            if (!isUserAuthorized) {
+                return Unauthorized();
+            }
+
+            _context.teams.Remove(team);
+            await _context.SaveChangesAsync();
+            return NoContent();
         }
 
         [HttpPost("add")]

@@ -53,7 +53,9 @@ namespace ProjectManagementSystem.MappingProfile
                 .ForMember(dest => dest.boardHasTeams,
                     src => src.MapFrom(src => src.boardHasTeams.Select(s => s.team)));
 
-            CreateMap<Team, ReadTeamDto>();
+            CreateMap<Team, ReadTeamDto>()
+                .ForMember(dest => dest.users,
+                    src => src.MapFrom(src => src.teamHasUsers.Select(s => s.user)));
             CreateMap<CreateTeamDto, Team>();
 
             CreateMap<CreateSectionDto, Section>()
