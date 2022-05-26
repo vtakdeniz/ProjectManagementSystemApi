@@ -487,7 +487,7 @@ namespace ProjectManagementSystem.Controllers.BoardController
         }
 
         [HttpPost("assignboard")]
-        public async Task<ActionResult> AssignBoard([FromQuery] int board_id, [FromQuery] string user_id)
+        public async Task<ActionResult> AssignBoard([FromQuery] int board_id, [FromQuery] string email)
         {
             var user = await GetIdentityUser();
             if (user == null)
@@ -500,7 +500,7 @@ namespace ProjectManagementSystem.Controllers.BoardController
                 return NotFound();
             }
             var targetUser = await _context.Users.Include(u => u.notifications)
-                .FirstOrDefaultAsync(u => u.Id == user_id);
+                .FirstOrDefaultAsync(u => u.Email == email);
 
             if (targetUser == null)
             {
@@ -516,16 +516,16 @@ namespace ProjectManagementSystem.Controllers.BoardController
 
             var userHasBoard = targetUser.notifications.Any(n => n.board_id == board_id)
                 ||
-                await _context.boardHasUsers.AnyAsync(rel => rel.board_id == board_id && rel.user_id == user_id)
+                await _context.boardHasUsers.AnyAsync(rel => rel.board_id == board_id && rel.user_id == targetUser.Id)
                 ||
-                await _context.boardHasAdmins.AnyAsync(rel => rel.board_id == board_id && rel.user_id == user_id);
+                await _context.boardHasAdmins.AnyAsync(rel => rel.board_id == board_id && rel.user_id == targetUser.Id);
             if (userHasBoard)
             {
                 return BadRequest();
             }
             targetUser.notifications.Add(new Notification
             {
-                owner_user_id = user_id,
+                owner_user_id = targetUser.Id,
                 owner_user=targetUser,
                 action_type = NotificationConstants.ACTION_TYPE_ASSIGN,
                 target_type = NotificationConstants.TARGET_BOARD,
