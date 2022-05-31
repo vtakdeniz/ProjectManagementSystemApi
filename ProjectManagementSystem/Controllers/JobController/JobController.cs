@@ -116,7 +116,11 @@ namespace ProjectManagementSystem.Controllers.JobController
             var job = await _context.jobs
                 .Include(job=>job.section)
                 .ThenInclude(section=>section.board)
-                .Where(job=>job.Id==id).FirstAsync();
+                .Where(job=>job.Id==id).FirstOrDefaultAsync();
+
+            if (job == null) {
+                return NotFound();
+            }
 
             if (job.receiverUserId == user.Id) {
                 _context.jobs.Remove(job);
@@ -158,7 +162,12 @@ namespace ProjectManagementSystem.Controllers.JobController
 
             var user = await GetIdentityUser();
 
-            var section = await _context.sections.Include(s=>s.board).FirstOrDefaultAsync(section=>section.Id==createJobDto.section_id);
+            var section = await _context.sections.Include(s=>s.board)
+                .FirstOrDefaultAsync(section=>section.Id==createJobDto.section_id);
+
+            if (section == null) {
+                return NotFound();
+            }
 
             var job = _mapper.Map<Job>(createJobDto);
             job.createUserId = user.Id;

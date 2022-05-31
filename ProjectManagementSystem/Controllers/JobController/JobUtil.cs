@@ -299,6 +299,59 @@ namespace ProjectManagementSystem.Controllers
             return Ok();
         }
 
+        [HttpPost("changesection")]
+        public async Task<ActionResult> ChangeSection([FromQuery]int job_id,[FromQuery]int new_section_id) {
+            var user = await GetIdentityUser();
+
+            if (user == null)
+            {
+                return NotFound(new { error = "User doesn't exists" });
+            }
+
+            var job = await _context.jobs.Include(job=>job.section)
+                .ThenInclude(section=>section.board)
+                .Where(job=>job.Id==job_id).FirstOrDefaultAsync();
+
+            var isUserAuthorized = await _context.userHasProjects
+                .AnyAsync(rel => rel.project_id == job.project_id && rel.user_id == user.Id)
+                ||
+                await _context.boardHasUsers
+                .AnyAsync(rel => rel.user_id == user.Id && rel.board_id == job.section.board.Id)
+                ||
+                await _context.boardHasAdmins
+                .AnyAsync(rel => rel.user_id == user.Id && rel.board_id == job.section.board.Id);
+
+            if (!isUserAuthorized)
+            {
+                return Unauthorized();
+            }
+
+            var order_no = job.order_no;
+            var jobsToReorder = await _context.jobs
+                .Where(j => j.order_no > order_no&&j.section_id==job.section_id)
+                .ToListAsync();
+
+            foreach (Job j in jobsToReorder) {
+                j.order_no--;
+            }
+
+            var section= await _context.sections
+                .FirstOrDefaultAsync(section=>section.Id==new_section_id);
+
+            if (section==null)
+                return NotFound();
+
+            var sectionJobCount = await _context.jobs
+                .CountAsync(job=>job.section_id==new_section_id);
+
+            job.section = section;
+            job.section_id = section.Id;
+            job.order_no = sectionJobCount+1;
+
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
         [ApiExplorerSettings(IgnoreApi = true)]
         [NonAction]
         private async Task<User> GetIdentityUser()

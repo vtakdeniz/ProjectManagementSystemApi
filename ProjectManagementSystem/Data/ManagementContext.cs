@@ -12,6 +12,7 @@ namespace ProjectManagementSystem.Data
     {
         public ManagementContext(DbContextOptions<ManagementContext> opt):base(opt)
         {
+
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

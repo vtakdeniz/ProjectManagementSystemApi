@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using ProjectManagementSystem.Models.UserElements;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace ProjectManagementSystem
 {
@@ -47,8 +48,10 @@ namespace ProjectManagementSystem
                 });
             });
 
-            services.AddDbContext<ManagementContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("ProjectManagementSystemConnection")));
-
+            services.AddDbContext<ManagementContext>(opt => opt
+            .UseSqlServer(Configuration.GetConnectionString("ProjectManagementSystemConnection"))
+            //.ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning)));
+            );
             services.AddControllers()
                 .AddNewtonsoftJson(options =>
             {
