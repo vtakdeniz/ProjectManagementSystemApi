@@ -124,11 +124,11 @@ namespace ProjectManagementSystem.Data
             modelBuilder.Entity<JobHasUsers>()
                 .HasOne(r => r.job)
                 .WithMany(job => job.jobHasUsers)
-                .HasForeignKey(r => r.job_id).OnDelete(DeleteBehavior.NoAction);
+                .HasForeignKey(r => r.job_id).OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<JobHasUsers>()
                 .HasOne(r => r.user)
                 .WithMany(user => user.jobHasUsers)
-                .HasForeignKey(r => r.user_id).OnDelete(DeleteBehavior.NoAction);
+                .HasForeignKey(r => r.user_id).OnDelete(DeleteBehavior.Restrict);
 
 
             modelBuilder.Entity<TeamHasUsers>()
