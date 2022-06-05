@@ -5,7 +5,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -41,19 +40,19 @@ namespace ProjectManagementSystem.Controllers.JobController
 
             var job = await _context.jobs
                 .Include(job => job.section)
-                .Include(job=>job.activityHistories)
+                .Include(job => job.activityHistories)
                 .Include(job => job.tags)
                 .Include(job => job.checkLists)
-                .Include(job=>job.jobHasUsers)
-                .ThenInclude(rel=>rel.user)
+                .Include(job => job.jobHasUsers)
+                .ThenInclude(rel => rel.user)
 
-                .FirstOrDefaultAsync(job=>job.Id==id);
+                .FirstOrDefaultAsync(job => job.Id == id);
 
             if (job == null) {
                 return NotFound();
             }
 
-            if (job.receiverUserId==user.Id) {
+            if (job.receiverUserId == user.Id) {
                 return Ok(_mapper.Map<ReadJobDto>(job));
             }
 
@@ -68,7 +67,7 @@ namespace ProjectManagementSystem.Controllers.JobController
                 await _context.boardHasUsers.AnyAsync(rel => rel.board_id == job.section.board_id && rel.user_id == user.Id)
                 ||
                 await _context.boardHasAdmins
-                .AnyAsync(rel=>rel.board_id==job.section.board_id&&rel.user_id==user.Id);
+                .AnyAsync(rel => rel.board_id == job.section.board_id && rel.user_id == user.Id);
 
             if (!isUserAuthorized)
             {
@@ -156,6 +155,56 @@ namespace ProjectManagementSystem.Controllers.JobController
                 .ToListAsync();
             return Ok(_mapper.Map<IEnumerable<ReadJobDto>>(jobs));
         }
+        
+        [HttpPost("addprojectjob")]
+        public async Task<ActionResult> AddProjectJob(CreateJobDto createJobDto)
+        {
+            var user = await GetIdentityUser();
+
+            var isUserAuthorized = await _context.userHasProjects
+               .AnyAsync(rel => rel.project_id == createJobDto.project_id && rel.user_id == user.Id);
+
+            if (!isUserAuthorized)
+                return Unauthorized();
+
+            var job = _mapper.Map<Job>(createJobDto);
+
+            job.createUserId = user.Id;
+
+            await _context.jobs.AddAsync(job);
+            await _context.SaveChangesAsync();
+            await _context.taskHasUsers.AddAsync(
+                    new JobHasUsers()
+                    {
+                        user_id = user.Id,
+                        job_id = job.Id
+                    }
+                );
+
+            return Ok();
+        }
+
+        [HttpGet("getprojectjob/{id}")]
+        public async Task<ActionResult> GetProjectJobs(int id) {
+            var user = await GetIdentityUser();
+
+            var isUserAuthorized = await _context.userHasProjects
+               .AnyAsync(rel => rel.project_id == id && rel.user_id == user.Id)
+               ||
+               await _context.userAssignedProjects
+               .AnyAsync(rel => rel.project_id == id && rel.receiver_id== user.Id)
+               ;
+
+            if (!isUserAuthorized)
+                return Unauthorized();
+
+            var jobs = await _context.jobs
+                .Where(job => job.project_id == id
+                && job.section_id == 0&&job.receiverUserId==user.Id)
+                .ToListAsync();
+
+            return Ok(_mapper.Map<List<ReadJobDto>>(jobs));
+        }
 
         [HttpPost]
         public async Task<ActionResult<ReadJobDto>> CreateJob(CreateJobDto createJobDto) {
@@ -198,12 +247,12 @@ namespace ProjectManagementSystem.Controllers.JobController
                 return CreatedAtAction("GetJob", new { id = job.Id }, _mapper.Map<ReadJobDto>(job));
             }
 
-            else if (job.receiverUserId == user.Id && (job.section_id == 0 || job.project_id != 0)) {
+            /*else if (job.receiverUserId == user.Id && (job.section_id == 0 || job.project_id != 0)) {
                 return BadRequest();
             }
             else if (job.receiverUserId != null && job.section_id != 0) {
                 return BadRequest();
-            }
+            }*/
 
             var isUserAuthorized = await _context.userHasProjects
                 .AnyAsync(rel => rel.project_id == job.project_id && rel.user_id == user.Id)
@@ -217,7 +266,7 @@ namespace ProjectManagementSystem.Controllers.JobController
             if (!isUserAuthorized)
                 return Unauthorized();
 
-            if (job.section_id == 0 && job.receiverUserId != null) {
+            /*if (job.section_id == 0 && job.receiverUserId != null) {
                 var receiverAssignedProject = await _context.userAssignedProjects
                     .AnyAsync(rel => rel.receiver_id == job.receiverUserId);
 
@@ -232,9 +281,10 @@ namespace ProjectManagementSystem.Controllers.JobController
                     return NotFound();
                 }
             }
+
             else if (job.section_id == 0 && job.receiverUserId == null) {
                 return BadRequest();
-            }
+            }*/
 
             job.section = section;
             job.section_id = section.Id;
