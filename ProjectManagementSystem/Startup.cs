@@ -41,7 +41,7 @@ namespace ProjectManagementSystem
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Version = "v2.0.12",
+                    Version = "v2.0.13",
                     Title = "Project Management System Api",
                     Description = "Project Management System Api",
                     //TermsOfService = new Uri(""),
@@ -97,16 +97,16 @@ namespace ProjectManagementSystem
                 .AllowAnyMethod()
                 .AllowAnyHeader();
             });
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Project Management System v1");
+            });
 
+            app.UseDeveloperExceptionPage();
             if (env.IsDevelopment())
             {
-                app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Project Management System v1");
-                });
-
-                app.UseDeveloperExceptionPage();
+                
                 
             }
 
