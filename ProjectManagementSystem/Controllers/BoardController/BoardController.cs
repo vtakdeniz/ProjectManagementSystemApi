@@ -390,6 +390,17 @@ namespace ProjectManagementSystem.Controllers.BoardController
                 return Unauthorized();
             }
 
+            var boardJobs = await _context.jobs
+                .Include(job => job.section)
+                .ThenInclude(section => section.board)
+                .Where(job => job.section.board.Id == id)
+                .ToListAsync();
+
+            var jobHasUserRel = await _context.taskHasUsers
+                .Where(rel => rel.user_id == user.Id &&
+                    boardJobs.Any(job => job.Id == rel.job_id)
+                ).ToListAsync();
+
             _context.boards.Remove(boardFromRepo);
             await _context.SaveChangesAsync();
             return NoContent();
