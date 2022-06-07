@@ -208,6 +208,25 @@ namespace ProjectManagementSystem.Controllers.ProjectController
             if (project==null) {
                 return NotFound();
             }
+
+            var projectJobs = await _context.jobs
+                .Where(job => job.project_id == id)
+                .ToListAsync();
+
+            var projectJobsIds =projectJobs.Select(job => job.Id);
+
+            var projectBoards = await _context.boards
+                .Where(board => board.project_id == id)
+                .ToListAsync();
+
+            var sections = await _context.sections.Include(s => s.board)
+                .Where(section => section.board.project_id == id)
+                .ToListAsync();
+
+            var rel = await _context.taskHasUsers
+                .Where(rel => projectJobsIds.Contains(rel.job_id))
+                .ToListAsync();
+
             _context.projects.Remove(project);
             await _context.SaveChangesAsync();
             return NoContent();

@@ -33,11 +33,11 @@ namespace ProjectManagementSystem.Data
             modelBuilder.Entity<Section>()
                 .HasOne(t => t.board)
                 .WithMany(p => p.sections)
-                .HasForeignKey(s=>s.board_id).OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(s=>s.board_id).OnDelete(DeleteBehavior.ClientCascade);
 
             modelBuilder.Entity<Section>()
              .HasMany(s => s.jobs)
-             .WithOne(s => s.section).OnDelete(DeleteBehavior.Cascade);
+             .WithOne(s => s.section).OnDelete(DeleteBehavior.ClientCascade);
 
             modelBuilder.Entity<Job>()
                 .HasOne(j => j.createUser)
@@ -75,7 +75,7 @@ namespace ProjectManagementSystem.Data
 
             modelBuilder.Entity<Project>()
                .HasMany(p => p.boards)
-               .WithOne(b => b.project).OnDelete(DeleteBehavior.Cascade);
+               .WithOne(b => b.project).OnDelete(DeleteBehavior.ClientCascade);
 
             ManyToManyRelationshipConfiguration(modelBuilder);
 

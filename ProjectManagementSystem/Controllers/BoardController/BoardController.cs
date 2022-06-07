@@ -396,9 +396,13 @@ namespace ProjectManagementSystem.Controllers.BoardController
                 .Where(job => job.section.board.Id == id)
                 .ToListAsync();
 
+            var boardJobsIds = boardJobs.Select(job => job.Id);
+
+            var section = await _context.sections
+                .Where(section => section.board_id == id).ToListAsync();
+
             var jobHasUserRel = await _context.taskHasUsers
-                .Where(rel => rel.user_id == user.Id &&
-                    boardJobs.Any(job => job.Id == rel.job_id)
+                .Where(rel => boardJobsIds.Contains(rel.job_id)
                 ).ToListAsync();
 
             _context.boards.Remove(boardFromRepo);
