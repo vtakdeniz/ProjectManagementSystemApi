@@ -104,9 +104,9 @@ namespace ProjectManagementSystem
             });
 
             app.UseDeveloperExceptionPage();
+
             if (env.IsDevelopment())
             {
-                
                 
             }
 

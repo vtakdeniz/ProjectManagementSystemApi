@@ -135,6 +135,11 @@ namespace ProjectManagementSystem.Controllers.JobController
             if (!isUserAuthorized) {
                 return Unauthorized();
             }
+
+            var jobHasUserRel = await _context.taskHasUsers
+                .Where(job => job.job_id == id && job.user_id == user.Id)
+                .ToListAsync();
+
             _context.jobs.Remove(job);
             await _context.SaveChangesAsync();
             return NoContent();
