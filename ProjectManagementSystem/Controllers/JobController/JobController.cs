@@ -80,24 +80,97 @@ namespace ProjectManagementSystem.Controllers.JobController
 
 
         [HttpGet("bymonth/{month}")]
-        public async Task<ActionResult> GetJobsByWeek(int month) {
+        public async Task<ActionResult> GetJobsByMonth(int month) {
             var user = await GetIdentityUser();
 
+            var userBoardJobs = await _context.taskHasUsers
+                .Where(rel => rel.user_id == user.Id)
+                .Select(rel => rel.job_id)
+                .ToListAsync();
+
+
             var jobs = await _context.jobs
-                .Where(job => (job.endDate.Month - DateTime.Now.Month) > month
-                && job.endDate.Year==DateTime.Now.Year
+                .Where(job =>
+                (userBoardJobs.Contains(job.Id)||job.receiverUserId==user.Id)
                 )
                 .ToListAsync();
 
+            var dueJobs = new List<Job>();
+            var nowMinutes = TimeSpan.FromTicks(DateTime.Now.Ticks).TotalMinutes;
             foreach (Job j in jobs) {
-                var s = j.endDate.Month;
-                var y = DateTime.Now.Month;
-                var year = j.endDate.Year;
+                var jobMinutes = TimeSpan.FromTicks(j.endDate.Ticks).TotalMinutes;
+                var result = (jobMinutes - nowMinutes)/43200;
+                if (result < month) {
+                    dueJobs.Add(j);
+                }
             }
 
-            return Ok(_mapper.Map<List<ReadJobDto>>(jobs));
+            return Ok(_mapper.Map<List<ReadJobDto>>(dueJobs));
         }
 
+        [HttpGet("byweek/{week}")]
+        public async Task<ActionResult> GetJobsByWeek(int week)
+        {
+            var user = await GetIdentityUser();
+
+            var userBoardJobs = await _context.taskHasUsers
+                .Where(rel => rel.user_id == user.Id)
+                .Select(rel => rel.job_id)
+                .ToListAsync();
+
+
+            var jobs = await _context.jobs
+                .Where(job =>
+                (userBoardJobs.Contains(job.Id)||job.receiverUserId==user.Id)
+                )
+                .ToListAsync();
+
+            var dueJobs = new List<Job>();
+            var nowMinutes = TimeSpan.FromTicks(DateTime.Now.Ticks).TotalMinutes;
+            foreach (Job j in jobs)
+            {
+                var jobMinutes = TimeSpan.FromTicks(j.endDate.Ticks).TotalMinutes;
+                var result = (jobMinutes - nowMinutes) / 10080;
+                if (result < week)
+                {
+                    dueJobs.Add(j);
+                }
+            }
+
+            return Ok(_mapper.Map<List<ReadJobDto>>(dueJobs));
+        }
+
+        [HttpGet("byday/{day}")]
+        public async Task<ActionResult> GetJobsByDay(int day)
+        {
+            var user = await GetIdentityUser();
+
+            var userBoardJobs = await _context.taskHasUsers
+                .Where(rel => rel.user_id == user.Id)
+                .Select(rel => rel.job_id)
+                .ToListAsync();
+
+
+            var jobs = await _context.jobs
+                .Where(job =>
+                (userBoardJobs.Contains(job.Id) || job.receiverUserId == user.Id)
+                )
+                .ToListAsync();
+
+            var dueJobs = new List<Job>();
+            var nowMinutes = TimeSpan.FromTicks(DateTime.Now.Ticks).TotalMinutes;
+            foreach (Job j in jobs)
+            {
+                var jobMinutes = TimeSpan.FromTicks(j.endDate.Ticks).TotalMinutes;
+                var result = (jobMinutes - nowMinutes) / 1440;
+                if (result < day)
+                {
+                    dueJobs.Add(j);
+                }
+            }
+
+            return Ok(_mapper.Map<List<ReadJobDto>>(dueJobs));
+        }
 
         [HttpGet("standalone")]
         public async Task<ActionResult<ReadJobDto>> GetStandAloneJobs()
@@ -402,16 +475,6 @@ namespace ProjectManagementSystem.Controllers.JobController
             if (jobFromRepo == null)
             {
                 return NotFound();
-            }
-
-            if (jobFromRepo.section_id != 0) {
-                var isUserAuthorized = await _context.boardHasAdmins
-                .AnyAsync(rel => rel.user_id == user.Id && rel.board_id == jobFromRepo.section.board_id);
-
-                if (!isUserAuthorized)
-                {
-                    return Unauthorized();
-                }
             }
 
             var jobToPatch = _mapper.Map<UpdateJobDto>(jobFromRepo);

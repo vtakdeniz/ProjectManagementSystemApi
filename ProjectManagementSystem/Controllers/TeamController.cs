@@ -46,7 +46,11 @@ namespace ProjectManagementSystem.Controllers.TeamController
                 return NotFound(new { error = "User doesn't exists in the current context" });
             }
 
-            var team = await _context.teams.Include(team=>team.teamHasUsers).ThenInclude(rel=>rel.user).Where(team=>team.Id==id).FirstOrDefaultAsync();
+            var team = await _context.teams
+                .Include(team=>team.teamHasUsers)
+                .ThenInclude(rel=>rel.user)
+                .Where(team=>team.Id==id)
+                .FirstOrDefaultAsync();
 
             if (team == null) {
                 return NotFound();

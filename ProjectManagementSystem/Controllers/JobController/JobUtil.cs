@@ -108,16 +108,6 @@ namespace ProjectManagementSystem.Controllers
                 return NotFound();
             }
 
-            if (jobFromRepo.section_id != 0) {
-                var isUserAuthorized = await _context.boardHasAdmins
-                    .AnyAsync(rel => rel.board_id == jobFromRepo.section.board_id
-                        && rel.user_id == user.Id);
-                if (!isUserAuthorized)
-                {
-                    return Unauthorized();
-                }
-            }
-
             var tag = _mapper.Map<Tags>(tagDto);
             var activity = new ActivityHistory()
             {
@@ -150,16 +140,6 @@ namespace ProjectManagementSystem.Controllers
             if (jobFromRepo == null)
             {
                 return NotFound();
-            }
-
-            if (jobFromRepo.section_id != 0) {
-                var isUserAuthorized = await _context.boardHasAdmins
-                   .AnyAsync(rel => rel.board_id == jobFromRepo.section.board_id
-                       && rel.user_id == user.Id);
-                if (!isUserAuthorized)
-                {
-                    return Unauthorized();
-                }
             }
 
             var activity = new ActivityHistory()
