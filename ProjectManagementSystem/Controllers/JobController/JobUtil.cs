@@ -300,7 +300,7 @@ namespace ProjectManagementSystem.Controllers
         }
 
         [HttpPost("changesection")]
-        public async Task<ActionResult> ChangeSection([FromQuery]int job_id,[FromQuery]int new_section_id) {
+        public async Task<ActionResult> ChangeSection([FromQuery]int job_id,[FromQuery]int new_section_id, [FromQuery] int new_order_no) {
             var user = await GetIdentityUser();
 
             if (user == null)
@@ -344,9 +344,24 @@ namespace ProjectManagementSystem.Controllers
             var sectionJobCount = await _context.jobs
                 .CountAsync(job=>job.section_id==new_section_id);
 
+            if (new_order_no > sectionJobCount)
+            {
+                return BadRequest();
+            }
+
+            var jobsToReorderFromSection = await _context.jobs
+                .Where(job=>job.section_id==new_section_id&&
+                    job.order_no>=new_order_no
+                ).ToListAsync();
+
+            foreach (Job j in jobsToReorderFromSection)
+            {
+                j.order_no = j.order_no + 1;
+            }
+            
             job.section = section;
             job.section_id = section.Id;
-            job.order_no = sectionJobCount+1;
+            job.order_no = new_order_no;
 
             await _context.SaveChangesAsync();
             return Ok();
