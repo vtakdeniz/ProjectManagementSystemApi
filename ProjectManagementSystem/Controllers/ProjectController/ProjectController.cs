@@ -344,7 +344,7 @@ namespace ProjectManagementSystem.Controllers.ProjectController
         [HttpGet("{id}/teams", Name = "GetTeamsOfProject")]
         public async Task<ActionResult<ReadTeamDto>> GetTeamsOfProject(int id)
         {
-            var user = await GetIdentityUser();
+                    var user = await GetIdentityUser();
             if (user == null)
             {
                 return NotFound(new { error = "User doesn't exists in the current context" });
@@ -383,7 +383,9 @@ namespace ProjectManagementSystem.Controllers.ProjectController
                 return Unauthorized();
             }
 
-            var jobs = await _context.jobs.Where(job => job.project_id == id && job.section_id==0).ToListAsync();
+            var jobs = await _context.jobs.Where(job => job.project_id == id
+            && job.section_id==0
+            ).ToListAsync();
             return Ok(_mapper.Map<List<ReadJobDto>>(jobs));
         } 
 

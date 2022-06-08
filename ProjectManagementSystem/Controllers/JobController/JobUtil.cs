@@ -107,12 +107,17 @@ namespace ProjectManagementSystem.Controllers
             {
                 return NotFound();
             }
-            var isUserAuthorized = await _context.boardHasAdmins
-              .AnyAsync(rel => rel.board_id == jobFromRepo.section.board_id && rel.user_id == user.Id);
-            if (!isUserAuthorized)
-            {
-                return Unauthorized();
+
+            if (jobFromRepo.section_id != 0) {
+                var isUserAuthorized = await _context.boardHasAdmins
+                    .AnyAsync(rel => rel.board_id == jobFromRepo.section.board_id
+                        && rel.user_id == user.Id);
+                if (!isUserAuthorized)
+                {
+                    return Unauthorized();
+                }
             }
+
             var tag = _mapper.Map<Tags>(tagDto);
             var activity = new ActivityHistory()
             {
@@ -147,18 +152,24 @@ namespace ProjectManagementSystem.Controllers
                 return NotFound();
             }
 
-            var isUserAuthorized = await _context.boardHasAdmins
-              .AnyAsync(rel => rel.board_id == jobFromRepo.section.board_id && rel.user_id == user.Id);
-            if (!isUserAuthorized)
-            {
-                return Unauthorized();
+            if (jobFromRepo.section_id != 0) {
+                var isUserAuthorized = await _context.boardHasAdmins
+                   .AnyAsync(rel => rel.board_id == jobFromRepo.section.board_id
+                       && rel.user_id == user.Id);
+                if (!isUserAuthorized)
+                {
+                    return Unauthorized();
+                }
             }
+
             var activity = new ActivityHistory()
             {
                 job_id = jobFromRepo.Id,
                 activityType = ActivityTypes.ACTIVITY_TYPE_REMOVE_TAG,
                 detail = string.Format("{0} removed a tag with name : '{1}' from this job", user.UserName, tag.tagName)
             };
+
+
             await _context.activityHistories.AddAsync(activity);
             _context.tags.Remove(tag);
             await _context.SaveChangesAsync();
@@ -174,23 +185,27 @@ namespace ProjectManagementSystem.Controllers
             {
                 return NotFound(new { error = "User doesn't exists" });
             }
+
             var jobFromRepo = await _context.jobs
                 .Include(job => job.section)
                 .Where(rel => rel.Id == checklistDto.job_id).FirstAsync();
-            if (jobFromRepo == null)
-            {
-                return NotFound();
-            }
-            var isUserAuthorized = await _context.boardHasAdmins
-               .AnyAsync(rel => rel.board_id == jobFromRepo.section.board_id && rel.user_id == user.Id)
-                ||
-                await _context.boardHasUsers
-               .AnyAsync(rel => rel.board_id == jobFromRepo.section.board_id && rel.user_id == user.Id)
-               ;
+            
+            if (jobFromRepo.section_id!=0) {
+                if (jobFromRepo == null)
+                {
+                    return NotFound();
+                }
+                var isUserAuthorized = await _context.boardHasAdmins
+                   .AnyAsync(rel => rel.board_id == jobFromRepo.section.board_id && rel.user_id == user.Id)
+                    ||
+                    await _context.boardHasUsers
+                   .AnyAsync(rel => rel.board_id == jobFromRepo.section.board_id && rel.user_id == user.Id)
+                   ;
 
-            if (!isUserAuthorized)
-            {
-                return Unauthorized();
+                if (!isUserAuthorized)
+                {
+                    return Unauthorized();
+                }
             }
 
             var checklist = _mapper.Map<CheckList>(checklistDto);
@@ -281,7 +296,8 @@ namespace ProjectManagementSystem.Controllers
                 return NotFound();
             }
 
-            var isUserAuthorized = await _context.userHasProjects
+            if (checklist.job.section!=null) {
+                var isUserAuthorized = await _context.userHasProjects
                 .AnyAsync(rel => rel.project_id == checklist.job.project_id && rel.user_id == user.Id)
                 ||
                 await _context.boardHasUsers
@@ -290,8 +306,10 @@ namespace ProjectManagementSystem.Controllers
                 await _context.boardHasAdmins
                 .AnyAsync(rel => rel.user_id == user.Id && rel.board_id == checklist.job.section.board.Id);
 
-            if (!isUserAuthorized) {
-                return Unauthorized();
+                if (!isUserAuthorized)
+                {
+                    return Unauthorized();
+                }
             }
 
             checklist.isSelected = !checklist.isSelected;

@@ -77,6 +77,28 @@ namespace ProjectManagementSystem.Controllers.JobController
             return Ok(_mapper.Map<ReadJobDto>(job));
         }
 
+
+
+        [HttpGet("bymonth/{month}")]
+        public async Task<ActionResult> GetJobsByWeek(int month) {
+            var user = await GetIdentityUser();
+
+            var jobs = await _context.jobs
+                .Where(job => (job.endDate.Month - DateTime.Now.Month) > month
+                && job.endDate.Year==DateTime.Now.Year
+                )
+                .ToListAsync();
+
+            foreach (Job j in jobs) {
+                var s = j.endDate.Month;
+                var y = DateTime.Now.Month;
+                var year = j.endDate.Year;
+            }
+
+            return Ok(_mapper.Map<List<ReadJobDto>>(jobs));
+        }
+
+
         [HttpGet("standalone")]
         public async Task<ActionResult<ReadJobDto>> GetStandAloneJobs()
         {
@@ -86,7 +108,7 @@ namespace ProjectManagementSystem.Controllers.JobController
                 .Where(job => job.receiverUserId == user.Id && job.project_id == 0 && job.section_id == 0)
                 .ToListAsync();
 
-            return Ok(_mapper.Map<ReadJobDto>(jobs));
+            return Ok(_mapper.Map<List<ReadJobDto>>(jobs));
         }
 
         [HttpGet("allboardtaken")]
@@ -382,15 +404,16 @@ namespace ProjectManagementSystem.Controllers.JobController
                 return NotFound();
             }
 
-            var isUserAuthorized = await _context.boardHasAdmins
+            if (jobFromRepo.section_id != 0) {
+                var isUserAuthorized = await _context.boardHasAdmins
                 .AnyAsync(rel => rel.user_id == user.Id && rel.board_id == jobFromRepo.section.board_id);
 
-            if (!isUserAuthorized)
-            {
-                return Unauthorized();
+                if (!isUserAuthorized)
+                {
+                    return Unauthorized();
+                }
             }
 
-           
             var jobToPatch = _mapper.Map<UpdateJobDto>(jobFromRepo);
             patchDocument.ApplyTo(jobToPatch, ModelState);
             if (!TryValidateModel(jobToPatch))
