@@ -344,7 +344,7 @@ namespace ProjectManagementSystem.Controllers
             var sectionJobCount = await _context.jobs
                 .CountAsync(job=>job.section_id==new_section_id);
 
-            if (new_order_no > sectionJobCount)
+            if (sectionJobCount!=0&&new_order_no > sectionJobCount)
             {
                 return BadRequest();
             }
