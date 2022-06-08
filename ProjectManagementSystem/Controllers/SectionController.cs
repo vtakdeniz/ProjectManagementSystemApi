@@ -122,7 +122,9 @@ namespace ProjectManagementSystem.Controllers
         {
             var user = await GetIdentityUser();
 
-            var sectionFromRepo = await _context.sections.Include(section => section.board).FirstAsync(section => section.Id == id);
+            var sectionFromRepo = await _context.sections
+                .Include(section => section.board)
+                .FirstAsync(section => section.Id == id);
 
             if (sectionFromRepo == null)
             {
@@ -136,6 +138,9 @@ namespace ProjectManagementSystem.Controllers
                   await _context.boardHasAdmins
                   .AnyAsync(rel => rel.board_id == sectionFromRepo.board.Id && rel.user_id == user.Id)
                   ;
+
+            var jobs = await _context.jobs.Where(job => job.section_id == id)
+                .ToListAsync();
 
             if (!isUserAuthorized)
             {
