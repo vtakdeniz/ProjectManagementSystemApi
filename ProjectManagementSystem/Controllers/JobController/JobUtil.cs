@@ -344,11 +344,6 @@ namespace ProjectManagementSystem.Controllers
             var sectionJobCount = await _context.jobs
                 .CountAsync(job=>job.section_id==new_section_id);
 
-            if (sectionJobCount!=0&&new_order_no > sectionJobCount)
-            {
-                return BadRequest();
-            }
-
             var jobsToReorderFromSection = await _context.jobs
                 .Where(job=>job.section_id==new_section_id&&
                     job.order_no>=new_order_no
