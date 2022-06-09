@@ -20,7 +20,7 @@ namespace ProjectManagementSystem.Models.JobElements
         public string jobTitle { get; set; }
         public string jobDescription { get; set; }
         public DateTime startDate { get; set; } = DateTime.Now;
-        public DateTime endDate { get; set; }
+        public DateTime endDate { get; set; } 
         public bool isFinished { get; set; } = false;
         public int order_no { get; set; }
         [Required]

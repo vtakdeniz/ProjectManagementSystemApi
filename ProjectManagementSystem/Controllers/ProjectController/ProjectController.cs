@@ -167,7 +167,7 @@ namespace ProjectManagementSystem.Controllers.ProjectController
                 {
                     var projectMinutes = TimeSpan.FromTicks(j.endDate.Ticks).TotalMinutes;
                     var result = (projectMinutes - nowMinutes) / seconds;
-                    if (result < span)
+                    if (result < span && j.endDate.Date>DateTime.Now)
                     {
                         dueProjects.Add(j);
                     }

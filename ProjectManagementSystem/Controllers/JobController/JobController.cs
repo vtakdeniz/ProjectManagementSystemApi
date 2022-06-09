@@ -118,7 +118,7 @@ namespace ProjectManagementSystem.Controllers.JobController
                 {
                     var boardMinutes = TimeSpan.FromTicks(j.endDate.Ticks).TotalMinutes;
                     var result = (boardMinutes - nowMinutes) / seconds;
-                    if (result < span)
+                    if (result < span && j.endDate.Date>DateTime.Now)
                     {
                         dueJobs.Add(j);
                     }

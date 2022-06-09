@@ -172,7 +172,7 @@ namespace ProjectManagementSystem.Controllers.BoardController
             {
                 var boardMinutes = TimeSpan.FromTicks(b.endDate.Ticks).TotalMinutes;
                 var result = (boardMinutes - nowMinutes) / seconds;
-                if (result < span)
+                if (result < span && b.endDate.Date>DateTime.Now)
                 {
                     dueBoards.Add(b);
                 }
