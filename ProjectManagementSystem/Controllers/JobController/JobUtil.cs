@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -20,6 +21,7 @@ namespace ProjectManagementSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     [Produces("application/json")]
     public class JobUtil : ControllerBase
     {

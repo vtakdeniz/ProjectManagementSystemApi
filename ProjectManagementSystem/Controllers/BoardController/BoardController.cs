@@ -121,7 +121,11 @@ namespace ProjectManagementSystem.Controllers.BoardController
                 .Where(rel => rel.user_id == user.Id)
                 .Select(rel => rel.board).ToListAsync();
 
-            var result=userBoards.Concat(adminBoards);
+            var result=userBoards
+                .Concat(adminBoards)
+                .GroupBy(board=>board.Id)
+                .Select(board=>board.First())
+                .ToList();
 
             if (userBoards == null)
             {
@@ -129,6 +133,52 @@ namespace ProjectManagementSystem.Controllers.BoardController
             }
 
             return Ok(_mapper.Map<IEnumerable <ReadBoardDto>> (result));
+        }
+
+        [HttpGet("date")]
+        public async Task<ActionResult> GetBoardsByDate([FromQuery] string timeunit, [FromQuery] int span)
+        {
+            int seconds = 0;
+
+            if (timeunit.CompareTo("month") == 0)
+            {
+                seconds = 43200;
+            }
+            else if (timeunit.CompareTo("week") == 0)
+            {
+                seconds = 10080;
+            }
+            else {
+                seconds = 1440;
+            }
+
+            var user = await GetIdentityUser();
+
+            var userBoards = await _context.boardHasUsers
+                .Where(rel => rel.user_id == user.Id)
+                .Select(rel => rel.board_id)
+                .ToListAsync();
+
+
+            var boards = await _context.boards
+                .Where(board =>
+                (userBoards.Contains(board.Id))
+                )
+                .ToListAsync();
+
+            var dueBoards = new List<Board>();
+            var nowMinutes = TimeSpan.FromTicks(DateTime.Now.Ticks).TotalMinutes;
+            foreach (Board b in boards)
+            {
+                var boardMinutes = TimeSpan.FromTicks(b.endDate.Ticks).TotalMinutes;
+                var result = (boardMinutes - nowMinutes) / seconds;
+                if (result < span)
+                {
+                    dueBoards.Add(b);
+                }
+            }
+
+            return Ok(_mapper.Map<List<ReadBoardDto>>(dueBoards));
         }
 
         [HttpPost("standalone")]
@@ -383,7 +433,11 @@ namespace ProjectManagementSystem.Controllers.BoardController
 
             var project_id = boardFromRepo.project_id;
             var isUserAuthorized = await _context.userHasProjects
-                .AnyAsync(rel => rel.project_id == project_id && rel.user_id == user.Id);
+                .AnyAsync(rel => rel.project_id == project_id && rel.user_id == user.Id)
+                ||
+                await _context.boardHasAdmins
+                .AnyAsync(rel => rel.board_id == id && rel.user_id == user.Id)
+                ;
 
             if (!isUserAuthorized)
             {

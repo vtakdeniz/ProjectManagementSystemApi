@@ -122,6 +122,60 @@ namespace ProjectManagementSystem.Controllers.ProjectController
             return Ok(_mapper.Map<IEnumerable<ReadProjectDto>>(userHasProjects));
         }
 
+        [HttpGet("date")]
+        public async Task<ActionResult> GetJobsByDate([FromQuery] string timeunit, [FromQuery] int span)
+        {
+            int seconds = 0;
+
+            if (timeunit.CompareTo("month") == 0)
+            {
+                seconds = 43200;
+            }
+            else if (timeunit.CompareTo("week") == 0)
+            {
+                seconds = 10080;
+            }
+            else
+            {
+                seconds = 1440;
+            }
+
+            var user = await GetIdentityUser();
+
+            var userAssignedProjects = await _context.userAssignedProjects 
+               .Where(rel => rel.receiver_id == user.Id)
+               .Select(rel => rel.project_id)
+               .ToListAsync();
+
+            var userProjects = await _context.userHasProjects
+              .Where(rel => rel.user_id == user.Id)
+              .Select(rel => rel.project_id)
+              .ToListAsync();
+
+
+            var projects = await _context.projects
+                .Where(project =>
+                (userAssignedProjects.Contains(project.Id) ||
+                userProjects.Contains(project.Id))
+                )
+                .ToListAsync();
+
+            var dueProjects = new List<Project>();
+            var nowMinutes = TimeSpan.FromTicks(DateTime.Now.Ticks).TotalMinutes;
+            foreach (Project j in projects)
+            {
+                {
+                    var projectMinutes = TimeSpan.FromTicks(j.endDate.Ticks).TotalMinutes;
+                    var result = (projectMinutes - nowMinutes) / seconds;
+                    if (result < span)
+                    {
+                        dueProjects.Add(j);
+                    }
+                }
+            }
+            return Ok(_mapper.Map<List<ReadProjectDto>>(dueProjects));
+        }
+
         [HttpGet]
         [Route("assigned")]
         public async Task<ActionResult<List<ReadProjectDto>>> GetAssignedProjects()

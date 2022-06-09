@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -20,6 +21,7 @@ namespace ProjectManagementSystem.Controllers.JobController
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     [Produces("application/json")]
     public class JobController : ControllerBase
     {
@@ -77,78 +79,30 @@ namespace ProjectManagementSystem.Controllers.JobController
             return Ok(_mapper.Map<ReadJobDto>(job));
         }
 
-
-
-        [HttpGet("bymonth/{month}")]
-        public async Task<ActionResult> GetJobsByMonth(int month) {
-            var user = await GetIdentityUser();
-
-            var userBoardJobs = await _context.taskHasUsers
-                .Where(rel => rel.user_id == user.Id)
-                .Select(rel => rel.job_id)
-                .ToListAsync();
-
-
-            var jobs = await _context.jobs
-                .Where(job =>
-                (userBoardJobs.Contains(job.Id)||job.receiverUserId==user.Id)
-                )
-                .ToListAsync();
-
-            var dueJobs = new List<Job>();
-            var nowMinutes = TimeSpan.FromTicks(DateTime.Now.Ticks).TotalMinutes;
-            foreach (Job j in jobs) {
-                var jobMinutes = TimeSpan.FromTicks(j.endDate.Ticks).TotalMinutes;
-                var result = (jobMinutes - nowMinutes)/43200;
-                if (result < month) {
-                    dueJobs.Add(j);
-                }
-            }
-
-            return Ok(_mapper.Map<List<ReadJobDto>>(dueJobs));
-        }
-
-        [HttpGet("byweek/{week}")]
-        public async Task<ActionResult> GetJobsByWeek(int week)
+        [HttpGet("date")]
+        public async Task<ActionResult> GetJobsByDate([FromQuery] string timeunit, [FromQuery] int span)
         {
-            var user = await GetIdentityUser();
+            int seconds = 0;
 
-            var userBoardJobs = await _context.taskHasUsers
-                .Where(rel => rel.user_id == user.Id)
-                .Select(rel => rel.job_id)
-                .ToListAsync();
-
-
-            var jobs = await _context.jobs
-                .Where(job =>
-                (userBoardJobs.Contains(job.Id)||job.receiverUserId==user.Id)
-                )
-                .ToListAsync();
-
-            var dueJobs = new List<Job>();
-            var nowMinutes = TimeSpan.FromTicks(DateTime.Now.Ticks).TotalMinutes;
-            foreach (Job j in jobs)
+            if (timeunit.CompareTo("month") == 0)
             {
-                var jobMinutes = TimeSpan.FromTicks(j.endDate.Ticks).TotalMinutes;
-                var result = (jobMinutes - nowMinutes) / 10080;
-                if (result < week)
-                {
-                    dueJobs.Add(j);
-                }
+                seconds = 43200;
+            }
+            else if (timeunit.CompareTo("week") == 0)
+            {
+                seconds = 10080;
+            }
+            else
+            {
+                seconds = 1440;
             }
 
-            return Ok(_mapper.Map<List<ReadJobDto>>(dueJobs));
-        }
-
-        [HttpGet("byday/{day}")]
-        public async Task<ActionResult> GetJobsByDay(int day)
-        {
             var user = await GetIdentityUser();
 
             var userBoardJobs = await _context.taskHasUsers
-                .Where(rel => rel.user_id == user.Id)
-                .Select(rel => rel.job_id)
-                .ToListAsync();
+               .Where(rel => rel.user_id == user.Id)
+               .Select(rel => rel.job_id)
+               .ToListAsync();
 
 
             var jobs = await _context.jobs
@@ -161,14 +115,15 @@ namespace ProjectManagementSystem.Controllers.JobController
             var nowMinutes = TimeSpan.FromTicks(DateTime.Now.Ticks).TotalMinutes;
             foreach (Job j in jobs)
             {
-                var jobMinutes = TimeSpan.FromTicks(j.endDate.Ticks).TotalMinutes;
-                var result = (jobMinutes - nowMinutes) / 1440;
-                if (result < day)
                 {
-                    dueJobs.Add(j);
+                    var boardMinutes = TimeSpan.FromTicks(j.endDate.Ticks).TotalMinutes;
+                    var result = (boardMinutes - nowMinutes) / seconds;
+                    if (result < span)
+                    {
+                        dueJobs.Add(j);
+                    }
                 }
             }
-
             return Ok(_mapper.Map<List<ReadJobDto>>(dueJobs));
         }
 
